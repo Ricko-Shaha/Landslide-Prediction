@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Value</title>
+    <style>
+        *   {
+            box-sizing: border-box;
+            --width1: {{value.Landslide}}%;
+            --width2: {{value.No_Landslide}}%;
+        }
+        body {
+            margin: 0;
+            background: linear-gradient(to left top, #65cfd9, #6cdbeb);
+            }
+        .header {
+
+            padding: 20px;
+            text-align: center;
+            
+        }
+        .column1 {
+            float: left;
+            width: var(--width1);
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right bottom,rgba(255,0,0,0.6),rgba(255,0,0,1));
+            border-radius: 1rem;
+        }
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .column2 {
+            float: right;
+            width: var(--width2);
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right bottom,rgba(0,255,0,0.6),rgba(0,255,0,1));
+            border-radius: 1rem;
+        }
+        .hone{
+            background: linear-gradient(to right top,rgba(255,255,255,0.7),rgba(255,255,255,0.3));
+            font-size: xx-large;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="hone">Landslide Probability</h1>
+    </div>
+    <div class="row">
+        <div class="column1">
+            <div><h2>Probability of <br>Landslide<br></h2></div>
+            <hr>
+            <div><h1>{{value.Landslide}}%</h1></div>
+        </div>
+        <div class="column2">
+            <div><h2>Probability of <br>No Landslide<br></h2></div>
+            <hr>
+            <div><h1>{{value.No_Landslide}}%</h1></div>
+        </div>
+    </div>
+</body>
+</html>
