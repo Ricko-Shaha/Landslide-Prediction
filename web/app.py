@@ -41,6 +41,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
 
 from src.predict import band_of, derive_twi_spi, feature_names, predict_one  # noqa: E402
+from src.artifacts import json_fingerprint  # noqa: E402
 
 import reclassify  # noqa: E402
 import study_area  # noqa: E402
@@ -233,14 +234,14 @@ def api_susceptibility():
     if not stale:
         rain = ROOT / "data" / "rainfall_grid.json"
         rc_now = reclassify.config_fingerprint()
-        rain_now = hashlib.sha256(rain.read_bytes()).hexdigest()[:16] if rain.exists() else None
+        rain_now = json_fingerprint(rain)
         if built.get("reclassify_config") not in (None, rc_now):
             stale, why = True, ("the conversion from measurements to class ratings has changed "
                                 "since this map was built; rerun "
                                 "python src/susceptibility_map.py --rebuild")
-        elif built.get("rainfall_grid") != rain_now and rain_now is not None:
-            stale, why = True, ("rainfall is now measured per coordinate, which this map was "
-                                "built without; rerun python src/susceptibility_map.py --rebuild")
+        elif built.get("rainfall_grid") != rain_now:
+            stale, why = True, ("the rainfall data has changed since this map was built; "
+                                "rerun python src/susceptibility_map.py --rebuild")
     payload["stale"] = stale
     payload["stale_reason"] = why
     return app.response_class(json.dumps(payload), mimetype="application/json")

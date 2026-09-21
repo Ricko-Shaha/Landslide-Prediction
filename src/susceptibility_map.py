@@ -42,6 +42,7 @@ import reclassify
 import study_area
 import terrain
 from predict import predict_one
+from artifacts import json_fingerprint
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "susceptibility_grid.json"
@@ -178,8 +179,7 @@ def build(step: float = 0.015, pause: float = 1.05):
     built_from = {
         "model_sha256_16": h,
         "reclassify_config": reclassify.config_fingerprint(),
-        "rainfall_grid": (hashlib.sha256(rain.read_bytes()).hexdigest()[:16]
-                          if rain.exists() else None),
+        "rainfall_grid": json_fingerprint(rain),
         "model_mtime": model_path.stat().st_mtime if model_path.exists() else None,
         "selected_model": (json.loads((ROOT / "reports" / "metrics.json")
                                       .read_text(encoding="utf-8")).get("selected_model")
