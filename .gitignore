@@ -1,0 +1,19 @@
+# never commit an environment. The original repo tracked ~7,900 files of site-packages.
+.venv/
+venv/
+project/Lib/
+project/Scripts/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# build outputs are reproducible from src/train.py
+models/*.joblib
+reports/*.json
+
+# The hosted demo ships the exact evaluated model and its matching map/metrics.
+!models/landslide_model.joblib
+!reports/metrics.json
+.env
+.env.*
+.pytest_cache/

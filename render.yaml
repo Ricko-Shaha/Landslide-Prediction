@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: rangamati-landslide
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-production.txt && python -m unittest discover -s tests
+    startCommand: python web/serve.py
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"

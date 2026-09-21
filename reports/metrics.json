@@ -1,0 +1,339 @@
+{
+  "dataset": {
+    "rows": 392,
+    "positives": 196,
+    "negatives": 196,
+    "features": [
+      "ELEVATION",
+      "SLOPE",
+      "ASPECT",
+      "TWI",
+      "SPI",
+      "NDVI",
+      "RAINFALL",
+      "LANDUSE"
+    ]
+  },
+  "protocol": "5-fold stratified CV repeated 6 times (30 fits per model), seed 0",
+  "leaderboard": [
+    {
+      "model": "Gradient boosting",
+      "accuracy": 0.8928540517148112,
+      "accuracy_sd": 0.026044612383599734,
+      "roc_auc": 0.9660163269778655,
+      "roc_auc_sd": 0.015764565164849833,
+      "average_precision": 0.971219482101037,
+      "average_precision_sd": 0.01230885017445265,
+      "f1": 0.8917684916464185,
+      "f1_sd": 0.027748926393383357,
+      "precision": 0.9007743806171277,
+      "precision_sd": 0.03893109825374484,
+      "recall": 0.8860042735042736,
+      "recall_sd": 0.05108136032768869,
+      "fnr": 0.11399572649572642,
+      "tos": 0.8770674317063577
+    },
+    {
+      "model": "Logistic regression",
+      "accuracy": 0.8899166937141619,
+      "accuracy_sd": 0.035251402430997454,
+      "roc_auc": 0.9517104974797281,
+      "roc_auc_sd": 0.024144498724893878,
+      "average_precision": 0.9610804147620009,
+      "average_precision_sd": 0.018477026524308257,
+      "f1": 0.886807426127161,
+      "f1_sd": 0.03783085614095683,
+      "precision": 0.9105901877708555,
+      "precision_sd": 0.04020025027575096,
+      "recall": 0.8664316239316239,
+      "recall_sd": 0.054732600463618754,
+      "fnr": 0.13356837606837613,
+      "tos": 0.5968606203098669
+    },
+    {
+      "model": "Random forest",
+      "accuracy": 0.8886454614302715,
+      "accuracy_sd": 0.028699126056071618,
+      "roc_auc": 0.963614398422091,
+      "roc_auc_sd": 0.01794553830252048,
+      "average_precision": 0.9691608823974387,
+      "average_precision_sd": 0.015143179735386586,
+      "f1": 0.8861474944248088,
+      "f1_sd": 0.02964851690513306,
+      "precision": 0.9094053654876416,
+      "precision_sd": 0.04774566079892289,
+      "recall": 0.8672649572649573,
+      "recall_sd": 0.04708257574266527,
+      "fnr": 0.13273504273504266,
+      "tos": 0.5605601901387451
+    },
+    {
+      "model": "Support vector machine",
+      "accuracy": 0.8865087092935192,
+      "accuracy_sd": 0.02952781898691304,
+      "roc_auc": 0.9486560376944994,
+      "roc_auc_sd": 0.024666940077391234,
+      "average_precision": 0.961359045602521,
+      "average_precision_sd": 0.01779046305393069,
+      "f1": 0.8807893631698541,
+      "f1_sd": 0.03217973452578039,
+      "precision": 0.9266321388340263,
+      "precision_sd": 0.03828168986709185,
+      "recall": 0.8409829059829061,
+      "recall_sd": 0.04544654297031152,
+      "fnr": 0.15901709401709385,
+      "tos": -0.1584305384762962
+    },
+    {
+      "model": "AdaBoost",
+      "accuracy": 0.8780157957373148,
+      "accuracy_sd": 0.03438864984495262,
+      "roc_auc": 0.9512899956169185,
+      "roc_auc_sd": 0.023768787702522762,
+      "average_precision": 0.9584743874647708,
+      "average_precision_sd": 0.01956082104929473,
+      "f1": 0.8751125627770289,
+      "f1_sd": 0.03808751694408755,
+      "precision": 0.8948582846337892,
+      "precision_sd": 0.04353507448943312,
+      "recall": 0.8595726495726497,
+      "recall_sd": 0.05954341150581808,
+      "fnr": 0.14042735042735033,
+      "tos": -0.2075194511860584
+    },
+    {
+      "model": "k-nearest neighbours",
+      "accuracy": 0.8822460240181759,
+      "accuracy_sd": 0.03096641088395329,
+      "roc_auc": 0.9314702498356345,
+      "roc_auc_sd": 0.025753331039509872,
+      "average_precision": 0.9319411595485544,
+      "average_precision_sd": 0.028235790398024232,
+      "f1": 0.8752305934095176,
+      "f1_sd": 0.03448346766148191,
+      "precision": 0.9280192593735612,
+      "precision_sd": 0.03641357281784673,
+      "recall": 0.8298504273504275,
+      "recall_sd": 0.050066984315031766,
+      "fnr": 0.17014957264957253,
+      "tos": -0.5420235119771529
+    },
+    {
+      "model": "Decision tree",
+      "accuracy": 0.8686681813264092,
+      "accuracy_sd": 0.036305193659599756,
+      "roc_auc": 0.9311812404120097,
+      "roc_auc_sd": 0.027699527363616337,
+      "average_precision": 0.9122280117628522,
+      "average_precision_sd": 0.04133057908526057,
+      "f1": 0.8637347804970694,
+      "f1_sd": 0.04037835827764726,
+      "precision": 0.8965247153850328,
+      "precision_sd": 0.050342430456775215,
+      "recall": 0.83741452991453,
+      "recall_sd": 0.06361663757291003,
+      "fnr": 0.16258547008546997,
+      "tos": -0.8550624354880954
+    },
+    {
+      "model": "Baseline (most frequent)",
+      "accuracy": 0.4974683544303798,
+      "accuracy_sd": 0.0031006199275736323,
+      "roc_auc": 0.5,
+      "roc_auc_sd": 0.0,
+      "average_precision": 0.5,
+      "average_precision_sd": 0.004002883114137193,
+      "f1": 0.13220338983050847,
+      "f1_sd": 0.264406779661017,
+      "precision": 0.09873417721518989,
+      "precision_sd": 0.19746835443037974,
+      "recall": 0.2,
+      "recall_sd": 0.4000000000000001,
+      "fnr": 0.8,
+      "tos": null
+    }
+  ],
+  "selected_model": "Gradient boosting",
+  "selection": {
+    "rule": "TOS, the relative selection metric of Shaha et al., IEEE RAAICON 2021",
+    "formula": "TOS_i = 0.5 * (tanh(z_acc_i) - tanh(z_err_i)), z-scores taken across the candidate pool with the population standard deviation",
+    "why": "Every candidate above the baseline lies within roughly one standard deviation of every other on accuracy, so a single headline number cannot separate them, and picking the largest one silently treats a missed landslide and a false alarm as equally expensive. TOS requires both axes to be named.",
+    "accuracy_axis": "cross-validated accuracy, mean of 30 fits",
+    "error_axis": "false negative rate, 1 - recall: in landslide susceptibility the missed landslide is the expensive error",
+    "candidate_pool": [
+      "Logistic regression",
+      "k-nearest neighbours",
+      "Decision tree",
+      "Support vector machine",
+      "AdaBoost",
+      "Gradient boosting",
+      "Random forest"
+    ],
+    "excluded_from_pool": {
+      "Baseline (most frequent)": "a reference line, not a deployable candidate; TOS is computed across the pool, so including it would move the scores of the models actually under consideration"
+    },
+    "ranking": [
+      {
+        "model": "Gradient boosting",
+        "tos": 0.8771,
+        "accuracy": 0.8929,
+        "fnr": 0.114
+      },
+      {
+        "model": "Logistic regression",
+        "tos": 0.5969,
+        "accuracy": 0.8899,
+        "fnr": 0.1336
+      },
+      {
+        "model": "Random forest",
+        "tos": 0.5606,
+        "accuracy": 0.8886,
+        "fnr": 0.1327
+      },
+      {
+        "model": "Support vector machine",
+        "tos": -0.1584,
+        "accuracy": 0.8865,
+        "fnr": 0.159
+      },
+      {
+        "model": "AdaBoost",
+        "tos": -0.2075,
+        "accuracy": 0.878,
+        "fnr": 0.1404
+      },
+      {
+        "model": "k-nearest neighbours",
+        "tos": -0.542,
+        "accuracy": 0.8822,
+        "fnr": 0.1701
+      },
+      {
+        "model": "Decision tree",
+        "tos": -0.8551,
+        "accuracy": 0.8687,
+        "fnr": 0.1626
+      }
+    ],
+    "selected": "Gradient boosting",
+    "would_be_selected_by_roc_auc": "Gradient boosting",
+    "would_be_selected_by_accuracy": "Gradient boosting",
+    "agrees_with_roc_auc": true,
+    "agrees_with_accuracy": true,
+    "pool_sensitivity": {
+      "trials": [
+        {
+          "dropped_weakest": 0,
+          "pool_size": 7,
+          "winner": "Gradient boosting",
+          "tos": 0.8771
+        },
+        {
+          "dropped_weakest": 1,
+          "pool_size": 6,
+          "winner": "Gradient boosting",
+          "tos": 0.8855
+        },
+        {
+          "dropped_weakest": 2,
+          "pool_size": 5,
+          "winner": "Gradient boosting",
+          "tos": 0.8792
+        },
+        {
+          "dropped_weakest": 3,
+          "pool_size": 4,
+          "winner": "Gradient boosting",
+          "tos": 0.8807
+        }
+      ],
+      "winner_stable_under_pool_change": true
+    },
+    "iia_demonstration": {
+      "question": "does adding a candidate that cannot win still reorder the candidates above it? If it does, the ranking is a property of the pool as well as of the models.",
+      "irrelevant_alternative": "Baseline (most frequent)",
+      "order_without_it": [
+        "Gradient boosting",
+        "Logistic regression",
+        "Random forest",
+        "Support vector machine",
+        "AdaBoost",
+        "k-nearest neighbours",
+        "Decision tree"
+      ],
+      "order_with_it_in_the_pool": [
+        "Gradient boosting",
+        "Logistic regression",
+        "Random forest",
+        "AdaBoost",
+        "Support vector machine",
+        "k-nearest neighbours",
+        "Decision tree"
+      ],
+      "order_changed": true,
+      "winner_changed": false,
+      "moved": [
+        {
+          "model": "Support vector machine",
+          "rank_without_it": 4,
+          "rank_with_it": 5
+        },
+        {
+          "model": "AdaBoost",
+          "rank_without_it": 5,
+          "rank_with_it": 4
+        }
+      ]
+    },
+    "limitation": "TOS is pool-relative by construction, so it is not independent of irrelevant alternatives: a candidate that never wins can still reorder the candidates above it. The ranking is therefore reported together with the pool it was computed over."
+  },
+  "out_of_fold_confusion": {
+    "tn": 178,
+    "fp": 18,
+    "fn": 22,
+    "tp": 174
+  },
+  "out_of_fold": {
+    "accuracy": 0.8979591836734694,
+    "precision": 0.90625,
+    "recall": 0.8877551020408163,
+    "f1": 0.8969072164948454,
+    "roc_auc": 0.9653529779258642,
+    "average_precision": 0.9697758381730961,
+    "brier": 0.07523878578084862
+  },
+  "calibration": {
+    "predicted": [
+      0.00346781040551701,
+      0.011649006577975062,
+      0.05620866097560253,
+      0.2604902487283101,
+      0.6976921311365708,
+      0.9703232340768229,
+      0.9954010108359449,
+      0.9983278743572049
+    ],
+    "observed": [
+      0.0,
+      0.02040816326530612,
+      0.12244897959183673,
+      0.2653061224489796,
+      0.6530612244897959,
+      0.9387755102040817,
+      1.0,
+      1.0
+    ]
+  },
+  "feature_importance": {
+    "SLOPE": 0.7155709305883399,
+    "ELEVATION": 0.07015115020080127,
+    "RAINFALL": 0.058828603020460835,
+    "LANDUSE": 0.0525435029797506,
+    "TWI": 0.03957607294505258,
+    "ASPECT": 0.03301682903376421,
+    "NDVI": 0.021419360954703297,
+    "SPI": 0.008893550277127304
+  },
+  "prevalence_note": "The inventory is balanced by construction, 196 landslide and 196 non-landslide points. Real terrain is nowhere near 50 percent landslide, so the number this model returns is the probability under a balanced sample, not the probability that a given hillside will fail. To read it as a real-world risk it must be rescaled by the true base rate, which this dataset does not record. The application states this next to every number it shows."
+}

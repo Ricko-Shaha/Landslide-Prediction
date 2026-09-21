@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Rangamati landslide explorer</title>
+  <rect width="64" height="64" rx="10" fill="#eef0e8"/>
+  <path d="M8 46 25 16l11 18 7-11 14 23M17 46l8-14 8 14" fill="none" stroke="#3b6550" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 55h48" stroke="#a36243" stroke-width="4" stroke-linecap="round"/>
+</svg>

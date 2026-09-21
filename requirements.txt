@@ -1,0 +1,8 @@
+flask>=3.0
+joblib>=1.3
+numpy>=1.26
+pandas>=2.0
+scikit-learn>=1.4
+
+# optional: live Earth Engine sampling. Needs `earthengine authenticate`.
+# earthengine-api>=0.1.380

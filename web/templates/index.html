@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landslide Susceptibility &middot; Rangamati Hill Tracts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=4" type="image/svg+xml">
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+<script src="{{ url_for('static', filename='config.js') }}" defer></script>
+<script src="{{ url_for('deployment_config') }}" defer></script>
+<script src="{{ url_for('static', filename='references.js') }}" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#explorer">Skip to the explorer</a>
+<div class="wrap">
+
+<header class="app-header">
+  <a class="app-brand" href="/" aria-label="Rangamati landslide explorer, home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 27 14 10l6 10 4-6 8 13M9 27l5-8 5 8M4 32h28"/></svg><span>Rangamati<small>Landslide explorer</small></span></a>
+  <nav aria-label="Application"><a href="#explorer">Explorer</a><a href="#modelCard">Model evidence</a><a href="/notebook">Analysis notebook</a></nav>
+  <button type="button" class="theme-button" id="themer" aria-label="Switch color theme">Theme</button>
+</header>
+<main>
+<header class="mast">
+  <div class="mast-copy">
+    <p class="eyebrow">Rangamati Hill Tracts · Bangladesh</p>
+    <h1>Landslide susceptibility</h1>
+    <p class="dek">Inspect a site, compare terrain factors, or explore the district.</p>
+  </div>
+    <div class="headline-stats">
+      {% if metrics.out_of_fold %}
+      <div class="hstat"><div class="k">{{ '%.3f'|format(metrics.out_of_fold.roc_auc) }}</div>
+        <div class="l">ROC AUC</div></div>
+      {% if metrics.selection %}
+      <div class="hstat"><div class="k">{{ '%+.2f'|format(metrics.selection.ranking[0].tos) }}</div>
+        <div class="l">TOS, selected</div></div>
+      {% endif %}
+      <div class="hstat"><div class="k">{{ '%.1f'|format(metrics.out_of_fold.recall*100) }}%</div>
+        <div class="l">Recall</div></div>
+      <div class="hstat"><div class="k">{{ metrics.dataset.rows }}</div>
+        <div class="l">Sites</div></div>
+      {% endif %}
+    </div>
+</header>
+
+      <div class="modes" id="explorer" role="group" aria-label="Input mode">
+        <button class="mode" id="mSite" aria-pressed="true">Surveyed site</button>
+        <button class="mode" id="mManual" aria-pressed="false">Factor classes</button>
+        <button class="mode" id="mLive" aria-pressed="false"
+          title="Click anywhere in the district. No account needed.">Live coordinate</button>
+        <button class="mode" id="mDistrict" aria-pressed="false"
+          title="Every cell of the district, scored">District map</button>
+        <button class="mode" id="mWalk" aria-pressed="false"
+          title="The same grid as a solid, at eye level">Walk it</button>
+      </div>
+<div class="cols" id="cols">
+  <section class="card" id="inputCard">
+    <div class="card-h">
+      <h2 id="inputTitle">A site from the inventory</h2>
+      <p class="sub" id="inputSub">Choose a surveyed site and compare the model with its recorded outcome.</p>
+    </div>
+    <div class="card-b">
+
+
+      <div class="pane on" id="pSite">
+        <label class="field-label" for="siteSel">Surveyed site</label>
+        <select id="siteSel" aria-label="Surveyed site"></select>
+        <p class="sub" style="margin-top:9px">Real rows from the inventory. The recorded outcome
+          stays hidden until you score it.</p>
+      </div>
+
+      <div class="pane" id="pManual">
+        <div class="bars" id="sliders"></div>
+        <p class="sub" style="margin-top:9px">Each control steps through the classes that factor
+          actually takes in the inventory. Nothing in between was ever observed. The controls
+          start from whichever site or coordinate you last looked at, so you can vary one factor
+          and watch what moves.</p>
+      </div>
+
+      <div class="pane" id="pLive">
+        <div class="location-tools"><button class="btn ghost" id="useLocation" type="button">Use my location</button><span>or choose a point on the map</span></div>
+        <p class="location-status" id="locationStatus" role="status" aria-live="polite"></p>
+        <div id="map"></div>
+        <p class="maphint" id="mapHint">Click anywhere inside the outlined district. Elevation is
+          read from SRTM, slope and aspect are computed from it.</p>
+        <div class="row2">
+          <label class="field-label" for="lat">Latitude<input type="text" inputmode="decimal" id="lat" placeholder="Latitude" value="23.3800"></label>
+          <label class="field-label" for="lon">Longitude<input type="text" inputmode="decimal" id="lon" placeholder="Longitude" value="92.2900"></label>
+        </div>
+        <div class="readout" id="terrainOut" hidden>
+          <div class="tr"><span class="tk">Elevation</span><span class="tv" id="tElev"></span></div>
+          <div class="tr"><span class="tk">Slope</span><span class="tv" id="tSlope"></span></div>
+          <div class="tr"><span class="tk">Aspect</span><span class="tv" id="tAspect"></span></div>
+          <div class="tr"><span class="tk">Source</span><span class="tv sm" id="tSrc"></span></div>
+        </div>
+        <div class="imglinks" id="imgLinks" hidden>
+          <span class="il-lab">See this point</span>
+          <a id="lkGmap" target="_blank" rel="noopener">Google Maps satellite</a>
+          <a id="lkGearth" target="_blank" rel="noopener">Google Earth</a>
+          <a id="lkEsri" target="_blank" rel="noopener">Esri World Imagery</a>
+          <a id="lkOsm" target="_blank" rel="noopener">OpenStreetMap</a>
+        </div>
+        <div class="note-live" id="liveNote" hidden></div>
+      </div>
+
+      <div class="pane" id="pDistrict">
+        <div class="dgrid">
+        <div id="dmap"></div>
+        <div class="dside">
+        <div class="dlegend">
+          <div class="scale" style="margin:0 0 5px">
+            <i style="background:#4E7A55"></i><i style="background:#7C9A55"></i>
+            <i style="background:#C79B33"></i><i style="background:#C26A32"></i>
+            <i style="background:#A8452C"></i>
+          </div>
+          <div class="scale-lab"><span>Very low</span><span>Moderate</span><span>Very high</span></div>
+        </div>
+        <div class="dstats" id="dStats"></div>
+        <div class="note-live" id="dNote" style="margin-top:12px">
+          <b>This is a ranking, not a forecast.</b> Every cell inside the district is scored on the
+          same footing, so the colours say which ground is more susceptible than which. They do not
+          say that a red cell has an 80 percent chance of failing: the inventory was built with
+          equal numbers of landslide and non-landslide sites, so the model is calibrated to a 50/50
+          world rather than to real terrain, where landslides are rare. Elevation, slope and aspect
+          are measured per cell; the remaining five factors are held fixed, so the pattern you see
+          is terrain. The surface is interpolated between measured cell centres to read as a
+          continuous field rather than a grid of tiles; that is drawing, not extra resolution,
+          and the true spacing is the cell size given above. Nothing is painted outside the
+          district, because outside it the model has no evidence.
+        </div>
+        </div>
+        </div>
+      </div>
+
+      <div class="pane" id="pWalk">
+        <div class="wgrid">
+          <div class="wshell">
+            <div id="walkHost"></div>
+            <div class="walk-hud" id="walkHud"></div>
+            <p class="walk-banner" id="walkBanner" role="status" hidden></p>
+            <div class="walk-intro" id="walkIntro">
+              <div class="walk-card">
+                <p class="walk-t">Walk the susceptibility map</p>
+                <p class="walk-p">Every cell of the district, at the elevation SRTM reports for
+                  it and coloured by what the model gives it. Ground the model scores
+                  <b>0.60&nbsp;to&nbsp;0.80</b> shakes underfoot. Ground it scores
+                  <b>0.80&nbsp;and&nbsp;over</b> gives way, and takes you with it.</p>
+                <p class="walk-k"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow
+                  keys &middot; <kbd>Esc</kbd> to give the page its scrolling back</p>
+                <button type="button" class="btn" id="walkStart">Send the surveyor out</button>
+              </div>
+            </div>
+            <div class="walk-pad" id="walkPad" aria-hidden="true">
+              <button type="button" data-k="f" aria-label="forward">&#9650;</button>
+              <div>
+                <button type="button" data-k="l" aria-label="left">&#9664;</button>
+                <button type="button" data-k="b" aria-label="back">&#9660;</button>
+                <button type="button" data-k="r" aria-label="right">&#9654;</button>
+              </div>
+            </div>
+          </div>
+          <div class="wside">
+            <div class="note-live" id="walkWhere"><b>Nobody has been placed yet.</b>
+              Send the surveyor out and walk him, or name a place on one of the other tabs.</div>
+            <div class="note-live" style="margin-top:12px">
+              <b>The surveyor follows the rest of the page.</b> Click anywhere on the live
+              coordinate map and he walks to that point. Choose a surveyed site and he goes to
+              ground in the same elevation and slope classes &mdash; inventory rows carry factor
+              ratings and no coordinates, so there is no single place any of them came from.
+            </div>
+            <div class="caveat" style="margin-top:12px">
+              <b>Vertical scale is exaggerated 7&times;.</b> The district is 210&nbsp;km from end
+              to end and 895&nbsp;m at its highest, so at true scale there is nothing to walk
+              over. Distances across the ground, and every number in the readout, are real.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="run">Assess susceptibility</button>
+        <button class="btn ghost" id="rand" title="Pick a site at random, then assess it yourself">Pick a random site</button>
+      </div>
+      <div id="err" role="alert"></div>
+
+      <div class="explain">
+        <b>These eight predictors are not measurements.</b> They are reclassified factor weights:
+        each terrain factor was binned into classes and each class given a score. Elevation takes
+        only <code>4</code> distinct values across the whole inventory, aspect <code>8</code>, and
+        NDVI runs <code>0</code> to <code>36</code> rather than &minus;1 to 1. A model trained on
+        these cannot read a raw satellite reading, which is the single most important thing to
+        know before extending this work.
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="assessCard">
+    <div class="card-h">
+      <h2>Assessment</h2>
+      <p class="sub" id="resSub" role="status" aria-live="polite">Awaiting input.</p>
+    </div>
+    <div class="card-b">
+      <div class="gauge-wrap">
+        <svg id="gauge" viewBox="0 0 160 160" width="150" height="150" aria-hidden="true"></svg>
+        <div class="verdict">
+          <p class="band" id="band">&mdash;</p>
+          <p class="pct" id="pct">No site assessed yet</p>
+          <div class="scale">
+            <i style="background:#4E7A55"></i><i style="background:#7C9A55"></i>
+            <i style="background:#C79B33"></i><i style="background:#C26A32"></i>
+            <i style="background:#A8452C"></i>
+          </div>
+          <div class="scale-lab"><span>Very low</span><span>Moderate</span><span>Very high</span></div>
+        </div>
+      </div>
+
+      <div id="warn"></div>
+
+      <div class="caveat">
+        <b>Read this as a relative ranking, not a probability of failure.</b>
+        The inventory holds equal numbers of landslide and non-landslide sites, so the model is
+        calibrated to a 50/50 world. Real hillsides fail far less often, so this number ranks
+        sites against each other and overstates absolute risk.
+      </div>
+
+      <div class="bars" id="featOut" style="margin-top:16px"></div>
+    </div>
+  </section>
+</div>
+
+<section class="card wide" id="modelCard">
+  <div class="card-h">
+    <p class="eyebrow">Behind the prediction</p><h2>Model &amp; evidence</h2>
+    <p class="sub">{{ metrics.protocol if metrics.protocol else '' }}</p>
+  </div>
+  <div class="card-b">
+
+    {% if metrics.selection %}
+    {% set sel = metrics.selection %}
+    <div class="verdict-band">
+      <div class="vb-pick">
+        <p class="vb-eyebrow">Selected by TOS</p>
+        <p class="vb-name">{{ sel.selected }}</p>
+        <p class="vb-score">{{ '%+.3f'|format(sel.ranking[0].tos) }}
+          <span class="vb-runner">runner-up {{ '%+.3f'|format(sel.ranking[1].tos) }}</span></p>
+      </div>
+      <div class="vb-formula">
+        <p class="formula">TOS = &frac12; ( tanh&nbsp;z<sub>accuracy</sub> &minus;
+          tanh&nbsp;z<sub>missed</sub> )</p>
+        <p class="tos-reference"><a data-tos-reference hidden target="_blank" rel="noopener">About TOS on Ricko’s portfolio <span aria-hidden="true">↗</span></a></p>
+        <dl class="vb-axes">
+          <dt>Accuracy axis</dt><dd>cross-validated accuracy</dd>
+          <dt>Error axis</dt><dd>false negative rate, the missed landslide</dd>
+          <dt>Pool</dt><dd>{{ sel.candidate_pool|length }} deployable candidates,
+            baseline excluded</dd>
+        </dl>
+      </div>
+      <div class="vb-checks">
+        <div class="vchk {{ 'ok' if sel.agrees_with_roc_auc else 'no' }}">
+          <span class="vk">{{ 'Agrees' if sel.agrees_with_roc_auc else 'Differs' }}</span>
+          <span class="vl">with ROC AUC</span></div>
+        <div class="vchk {{ 'ok' if sel.pool_sensitivity.winner_stable_under_pool_change else 'no' }}">
+          <span class="vk">{{ 'Stable' if sel.pool_sensitivity.winner_stable_under_pool_change
+            else 'Unstable' }}</span>
+          <span class="vl">when the weakest candidates are dropped</span></div>
+        <div class="vchk {{ 'no' if sel.iia_demonstration.order_changed else 'ok' }}">
+          <span class="vk">{{ 'Order moves' if sel.iia_demonstration.order_changed
+            else 'Order holds' }}</span>
+          <span class="vl">if an unusable candidate joins the pool</span></div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="mc-data">
+      <div class="mc-block">
+        <p class="mc-h">The candidates</p>
+        <div class="table-scroll" role="region" aria-label="Candidate model comparison" tabindex="0"><table class="lb">
+          <thead><tr><th>Model</th><th class="num">Accuracy</th><th class="num">Missed</th>
+            <th class="tosh">TOS</th></tr></thead>
+          <tbody>
+          {% for r in metrics.leaderboard %}
+            <tr class="{{ 'best' if r.model == metrics.selected_model else '' }}{{ ' base' if 'Baseline' in r.model else '' }}">
+              <td class="name">{{ r.model }}{% if r.model == metrics.selected_model %}<span class="pill">selected</span>{% endif %}</td>
+              <td class="num">{{ '%.3f'|format(r.accuracy) }}
+                <span class="unit">&plusmn;{{ '%.3f'|format(r.accuracy_sd) }}</span></td>
+              <td class="num">{{ '%.3f'|format(r.fnr) if r.fnr is not none else '' }}</td>
+              <td class="tosc">
+                {% if r.tos is not none %}
+                  <span class="tosnum">{{ '%+.3f'|format(r.tos) }}</span>
+                  <span class="tosbar">
+                    <i class="{{ 'pos' if r.tos >= 0 else 'neg' }}"
+                       style="width:{{ (r.tos|abs / 1.0 * 50)|round(1) }}%"></i>
+                  </span>
+                {% else %}<span class="unit">not a candidate</span>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table></div>
+        <p class="mc-cap">Bars run either side of zero. Accuracy separates the top three by three
+          thousandths; TOS separates them by a quarter of its range, because it is also being
+          told that the two errors cost different amounts.</p>
+      </div>
+
+      <div class="mc-block">
+        <p class="mc-h">What the model leans on</p>
+        <div class="bars">
+        {% for f, v in metrics.feature_importance.items() %}
+          <div class="bar"><span class="n">{{ f }}</span>
+            <span class="t"><i style="width:{{ (v*100/(metrics.feature_importance.values()|max))|round(1) }}%"></i></span>
+            <span class="v">{{ '%.3f'|format(v) }}</span></div>
+        {% endfor %}
+        </div>
+        <p class="mc-cap">Slope carries most of the signal, which matches the geomorphology and is
+          a good sign the model is not keying on an artefact. It is also why live coordinate
+          lookup is worth doing at all: slope, elevation and aspect together are 0.819 of this
+          chart, and all three come from elevation.</p>
+
+        {% if metrics.out_of_fold_confusion %}
+        <div class="cm">
+          <p class="mc-h" style="margin-top:22px">Out of fold, at the 0.5 threshold</p>
+          <div class="cm-grid">
+            <div class="cmc good"><span class="cmk">{{ metrics.out_of_fold_confusion.tp }}</span>
+              <span class="cml">caught</span></div>
+            <div class="cmc bad"><span class="cmk">{{ metrics.out_of_fold_confusion.fn }}</span>
+              <span class="cml">missed landslides</span></div>
+            <div class="cmc warn"><span class="cmk">{{ metrics.out_of_fold_confusion.fp }}</span>
+              <span class="cml">false alarms</span></div>
+            <div class="cmc good"><span class="cmk">{{ metrics.out_of_fold_confusion.tn }}</span>
+              <span class="cml">correct negatives</span></div>
+          </div>
+          <p class="mc-cap">The threshold that produced this split treats a missed landslide and a
+            false alarm as equally costly. The selection rule above does not, which is the
+            inconsistency worth fixing next.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="mc-notes">
+      <div class="mcn">
+        <p class="mcn-h">Why accuracy did not choose</p>
+        <p>The original thesis ranked nine models on one train/test split. Repeat that split
+          thirty times and every candidate above the baseline lands within about one standard
+          deviation of the others. Taking the largest number would also have quietly priced a
+          missed landslide and a false alarm the same.</p>
+      </div>
+      {% if metrics.selection and metrics.selection.iia_demonstration.order_changed %}
+      <div class="mcn">
+        <p class="mcn-h">The score depends on the field</p>
+        <p>Put the baseline back into the pool, a model nobody would deploy, and the winner holds
+          but
+          {% for m in metrics.selection.iia_demonstration.moved %}{{ m.model }}{% if not loop.last %} and {% endif %}{% endfor %}
+          trade places at ranks
+          {% for m in metrics.selection.iia_demonstration.moved %}{{ m.rank_without_it }}{% if not loop.last %} and {% endif %}{% endfor %}.
+          A relative metric is not independent of irrelevant alternatives, so a ranking is only
+          meaningful beside the pool it was computed over.</p>
+      </div>
+      {% endif %}
+      <div class="mcn">
+        <p class="mcn-h">The probability is not a risk</p>
+        <p>The inventory holds equal numbers of landslide and non-landslide sites, so the model is
+          calibrated to a 50/50 world. Real hillsides fail far less often. Every number here ranks
+          sites against each other and overstates absolute risk.</p>
+      </div>
+      <div class="mcn">
+        <p class="mcn-h">Scoring a surveyed site is in-sample</p>
+        <p>The shipped model was fitted on all
+          {{ metrics.dataset.rows if metrics.dataset else '392' }} rows, so it will almost always
+          agree with a site from the inventory. The honest figure is the out-of-fold one above,
+          not what the demo shows.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+<footer>
+  <div>Landslide susceptibility, Rangamati Hill Tracts &middot; undergraduate thesis, Chittagong
+    University of Engineering &amp; Technology</div>
+  <div>Landslide inventory after
+    <a href="https://doi.org/10.3390/data5010004">Rabby &amp; Li (2020)</a> and
+    <a href="https://doi.org/10.1080/10106049.2020.1864026">Rabby, Hossain &amp; Abedin (2021)</a>,
+    as published by
+    <a href="https://doi.org/10.1007/s42979-023-01960-5">Inan &amp; Rahman (2023)</a> under MIT
+    &middot; elevation
+    <a href="https://www.opentopodata.org/datasets/srtm/">SRTM 30&thinsp;m via OpenTopoData</a>
+    &middot; rainfall <a href="https://power.larc.nasa.gov/">NASA POWER</a> &middot; imagery Esri,
+    Vantor, Earthstar Geographics &middot; labels CARTO and OpenStreetMap contributors</div>
+</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const FEATURES = {{ features|tojson }};
+const EE_OK = {{ 'true' if ee_available else 'false' }};
+let SCHEMA = {};
+
+/* ---------- mode switching ---------- */
+const panes={mSite:"pSite",mManual:"pManual",mLive:"pLive",mDistrict:"pDistrict",
+             mWalk:"pWalk"};
+let mode="mSite";
+const MODE_COPY = {
+  mSite: ["A site from the inventory", "Choose a surveyed site and compare the model with its recorded outcome."],
+  mManual: ["Adjust the factor classes", "Change one factor at a time to see how it affects the assessment."],
+  mLive: ["Read a point on the map", "Choose a coordinate inside Rangamati to measure elevation, slope, and aspect."],
+  mDistrict: ["The district, on one scale", "Compare susceptibility across Rangamati. Hover over the surface to inspect a cell."],
+  mWalk: ["Walk through the terrain", "Explore the same district grid at eye level, coloured by model score."]
+};
+Object.keys(panes).forEach(id=>{
+  document.getElementById(id).setAttribute("aria-controls", panes[id]);
+  document.getElementById(id).addEventListener("click",e=>{
+    if(e.currentTarget.disabled) return;
+    mode=id;
+    if (id !== "mLive") cancelDeviceLocation();
+    const menu = document.getElementById("explorer");
+    const tabBox = e.currentTarget.getBoundingClientRect(), menuBox = menu.getBoundingClientRect();
+    const shift = tabBox.left < menuBox.left ? tabBox.left - menuBox.left
+      : tabBox.right > menuBox.right ? tabBox.right - menuBox.right : 0;
+    if (shift) menu.scrollBy({left: shift,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? "auto" : "smooth"});
+    document.getElementById("inputTitle").textContent=MODE_COPY[id][0];
+    document.getElementById("inputSub").textContent=MODE_COPY[id][1];
+    Object.keys(panes).forEach(k=>{
+      document.getElementById(k).setAttribute("aria-pressed",String(k===id));
+      document.getElementById(panes[k]).classList.toggle("on",k===id);
+    });
+    if(id==="mLive"&&window._map){
+      setTimeout(()=>{
+        window._map.invalidateSize();
+        if(!MAP_TOUCHED) fitDistrict();     // first reveal: frame the district, not a hillside
+      },60);
+    }
+
+    /* The district map is a different kind of view: it answers "where", not "here". It needs the
+       full width, so the single-site assessment panel steps aside while it is showing. */
+    const isDistrict = (id==="mDistrict"), isWalk = (id==="mWalk");
+    const full = isDistrict || isWalk;
+    document.getElementById("cols").classList.toggle("wide-map", full);
+    document.querySelector(".actions").style.display = full ? "none" : "";
+    document.querySelector(".explain").hidden = full;
+    if(isDistrict) loadDistrict();
+    /* The walk costs a WebGL context and three.js, so it is not paid for until it is asked
+       for. Anything the other tabs asked of it before then is waiting in WALK_Q. */
+    if(isWalk) ensureWalk().then(w=>{ if(w) w.wake(); });
+  });
+});
+
+/* ---------- the district susceptibility map ----------
+   Every grid cell inside the boundary, scored by the same model and painted on the same scale
+   the gauge uses. Drawn on a canvas renderer because a couple of thousand rectangles as
+   individual DOM nodes would make the map crawl. */
+let DMAP=null, DLOADED=false;
+const BANDS=[[0.20,"#4E7A55","Very low"],[0.40,"#7C9A55","Low"],[0.60,"#C79B33","Moderate"],
+             [0.80,"#C26A32","High"],[1.01,"#A8452C","Very high"]];
+function bandColour(p){ for(const b of BANDS) if(p<b[0]) return b[1]; return BANDS[4][1]; }
+function bandName(p){ for(const b of BANDS) if(p<b[0]) return b[2]; return BANDS[4][2]; }
+function hexRGB(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),
+                            parseInt(h.slice(5,7),16)]; }
+
+async function loadDistrict(){
+  if(DLOADED) { if(DMAP) setTimeout(()=>DMAP.invalidateSize(),60); return; }
+  const stats=document.getElementById("dStats");
+  stats.innerHTML='<div class="dstat"><div class="k">...</div><div class="l">loading</div></div>';
+  let g, bnd;
+  try{
+    const [rg,rb]=await Promise.all([fetch("/api/susceptibility"),fetch("/api/boundary")]);
+    g=await rg.json(); bnd=await rb.json();
+    if(!rg.ok||g.error) throw new Error(g.error||"not built");
+  }catch(e){
+    stats.innerHTML='<div class="dstat" style="grid-column:1/-1"><div class="k">Not built</div>'+
+      '<div class="l">run python src/susceptibility_map.py</div></div>';
+    return;
+  }
+  DLOADED=true;
+
+  try{
+    DMAP=L.map("dmap",{scrollWheelZoom:false}).setView([22.75,92.20],9);
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      {maxZoom:15,attribution:'Imagery: <a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noopener">Esri World Imagery</a> &mdash; Esri, Vantor, Earthstar Geographics, and the GIS User Community'}).addTo(DMAP);
+    DMAP.createPane("surface");
+    DMAP.getPane("surface").style.zIndex=350;
+
+    /* ---- paint the surface ----------------------------------------------------------
+       Drawn as one image rather than a few thousand rectangles, for two reasons the blocky
+       first version made obvious. Rectangles are squares: at 1.1 km a cell is a visible tile,
+       and the map looked pixelated rather than continuous. And a rectangle centred on a cell
+       whose centre is just inside the boundary hangs half a cell outside it, so the colour
+       spilled across the district border.
+
+       So: one pixel per cell into a small canvas, scaled up with bilinear smoothing to make a
+       continuous field, then clipped to the boundary polygon so nothing paints outside the only
+       area the model has evidence about. The smoothing interpolates between measured cell
+       centres; it does not add resolution, and the cell size is stated beside the map. */
+    const step=g.summary.step_deg;
+    const CI=Object.fromEntries(g.columns.map((n,i)=>[n,i]));
+    let laMin=Infinity,laMax=-Infinity,loMin=Infinity,loMax=-Infinity;
+    for(const c of g.grid){
+      const la=c[CI.lat], lo=c[CI.lon];
+      if(la<laMin)laMin=la; if(la>laMax)laMax=la;
+      if(lo<loMin)loMin=lo; if(lo>loMax)loMax=lo;
+    }
+    const nx=Math.round((loMax-loMin)/step)+1, ny=Math.round((laMax-laMin)/step)+1;
+
+    const small=document.createElement("canvas"); small.width=nx; small.height=ny;
+    const sctx=small.getContext("2d");
+    const img=sctx.createImageData(nx,ny);
+    const filled=new Uint8Array(nx*ny);
+    const put=(ix,iy,rgb)=>{
+      const o=(iy*nx+ix)*4;
+      img.data[o]=rgb[0]; img.data[o+1]=rgb[1]; img.data[o+2]=rgb[2]; img.data[o+3]=255;
+      filled[iy*nx+ix]=1;
+    };
+    const C0=Object.fromEntries(g.columns.map((n,i)=>[n,i]));
+    for(const c of g.grid){
+      const ix=Math.round((c[C0.lon]-loMin)/step);
+      const iy=ny-1-Math.round((c[C0.lat]-laMin)/step);   // canvas y grows southward
+      if(ix<0||iy<0||ix>=nx||iy>=ny) continue;
+      put(ix,iy,hexRGB(bandColour(c[C0.probability])));
+    }
+    /* Gaps would interpolate toward transparent and leave pale seams, so unfilled pixels take
+       the nearest filled colour before any smoothing happens. */
+    for(let pass=0;pass<6;pass++){
+      const snap=filled.slice();
+      for(let y=0;y<ny;y++) for(let x=0;x<nx;x++){
+        if(snap[y*nx+x]) continue;
+        for(const [dy,dx] of [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]]){
+          const yy=y+dy, xx=x+dx;
+          if(yy<0||xx<0||yy>=ny||xx>=nx||!snap[yy*nx+xx]) continue;
+          const src=(yy*nx+xx)*4, dst=(y*nx+x)*4;
+          img.data[dst]=img.data[src]; img.data[dst+1]=img.data[src+1];
+          img.data[dst+2]=img.data[src+2]; img.data[dst+3]=255;
+          filled[y*nx+x]=1; break;
+        }
+      }
+    }
+    sctx.putImageData(img,0,0);
+
+    const SC=12;
+    const big=document.createElement("canvas");
+    big.width=nx*SC; big.height=ny*SC;
+    const bctx=big.getContext("2d");
+    bctx.imageSmoothingEnabled=true; bctx.imageSmoothingQuality="high";
+    bctx.drawImage(small,0,0,big.width,big.height);
+
+    /* clip to the district: everything outside the ring is discarded */
+    const south=laMin-step/2, north=laMax+step/2, west=loMin-step/2, east=loMax+step/2;
+    const px=(lat,lon)=>[ (lon-west)/(east-west)*big.width,
+                          (north-lat)/(north-south)*big.height ];
+    bctx.globalCompositeOperation="destination-in";
+    bctx.beginPath();
+    bnd.ring.forEach((pt,i)=>{ const [x,y]=px(pt[0],pt[1]); i?bctx.lineTo(x,y):bctx.moveTo(x,y); });
+    bctx.closePath(); bctx.fill();
+    bctx.globalCompositeOperation="source-over";
+
+    L.imageOverlay(big.toDataURL("image/png"),
+      [[south,west],[north,east]],{opacity:.82,pane:"surface"}).addTo(DMAP);
+
+    const poly=L.polygon(bnd.ring,{color:"#F5D76E",weight:1.6,opacity:.95,fill:false}).addTo(DMAP);
+    DMAP.fitBounds(poly.getBounds(),{padding:[10,10]});
+
+    /* read the value under the pointer straight from the data, not from the painted image */
+    const byKey=new Map();
+    const COL=Object.fromEntries(g.columns.map((n,i)=>[n,i]));
+    for(const c of g.grid) byKey.set(Math.round(c[COL.lat]/step)+"_"+Math.round(c[COL.lon]/step),c);
+    const tip=L.tooltip({sticky:true});
+    DMAP.on("mousemove",e=>{
+      const k=Math.round(e.latlng.lat/step)+"_"+Math.round(e.latlng.lng/step);
+      const c=byKey.get(k);
+      if(!c||!c[COL.inside_district]){ DMAP.closeTooltip(tip); return; }
+      const pv=c[COL.probability];
+      tip.setLatLng(e.latlng).setContent(
+        `<div class="dtip"><b>${bandName(pv)}</b> &middot; ${(pv*100).toFixed(0)}%<br>`+
+        `${c[COL.elevation_m].toFixed(0)} m &middot; ${c[COL.slope_deg].toFixed(1)}&deg; slope<br>`+
+        `${c[COL.lat].toFixed(3)}, ${c[COL.lon].toFixed(3)}</div>`).addTo(DMAP);
+    });
+    DMAP.on("mouseout",()=>DMAP.closeTooltip(tip));
+    setTimeout(()=>DMAP.invalidateSize(),80);
+  }catch(err){ console.warn("district map:",err); }
+
+  if(g.stale){
+    const n=document.getElementById("dNote");
+    n.className="note-live warn";
+    n.innerHTML="<b>This map is out of date.</b> "+(g.stale_reason||"")+
+      " It is precomputed rather than scored on demand, because every cell needs its own "+
+      "elevation lookup, so it does not follow a retrain by itself.<br><br>"+n.innerHTML;
+  }
+
+  const sm=g.summary;
+  const pct=v=>(v*100).toFixed(0)+"%";
+  stats.innerHTML=
+    `<div class="dstat"><div class="k">${sm.cells.toLocaleString()}</div>
+       <div class="l">cells scored<br>${sm.cell_km} km each</div></div>
+     <div class="dstat"><div class="k">${pct(sm.median_probability)}</div>
+       <div class="l">median cell<br>on the balanced scale</div></div>
+     <div class="dstat"><div class="k">${pct(sm.share_high)}</div>
+       <div class="l">of the district<br>at 0.6 or above</div></div>
+     <div class="dstat"><div class="k">${pct(sm.share_very_high)}</div>
+       <div class="l">of the district<br>at 0.8 or above</div></div>`;
+}
+
+/* ---------- sliders, built from the REAL observed classes ---------- */
+const sliders={};
+const SLIDERS_READY = fetch("/api/schema").then(r=>r.json()).then(sc=>{
+  SCHEMA=sc;
+  const host=document.getElementById("sliders");
+  host.innerHTML="";
+  FEATURES.forEach(f=>{
+    const vals=(sc[f]&&sc[f].values)||[0,1];
+    const startIdx=Math.floor(vals.length/2);
+    const el=document.createElement("div"); el.className="feat";
+    el.innerHTML=`<label for="s_${f}">${f}</label>
+      <input type="range" id="s_${f}" min="0" max="${vals.length-1}" step="1" value="${startIdx}">
+      <span class="val"><span id="v_${f}">${vals[startIdx]}</span></span>`;
+    host.appendChild(el);
+    const inp=el.querySelector("input");
+    const paint=()=>{document.getElementById("v_"+f).textContent=vals[+inp.value];};
+    inp.addEventListener("input",paint); paint();
+    sliders[f]={input:inp, values:vals, paint:paint};
+  });
+});
+
+/* Load a feature vector into the sliders.
+
+   The three input modes were independent, so choosing a surveyed site and then opening Factor
+   classes showed whatever the sliders happened to be left on, which reads as that site's values
+   and is not. Every mode that produces a feature vector now pushes it here, so Factor classes
+   always starts from what you were just looking at and becomes a way to vary it rather than a
+   separate unrelated control. */
+function setSliders(feats){
+  if(!feats) return;
+  FEATURES.forEach(f=>{
+    const s=sliders[f];
+    if(!s || feats[f]===undefined || feats[f]===null) return;
+    const v=+feats[f];
+    let i=s.values.indexOf(v);
+    if(i<0){
+      /* Not one of the observed classes: fall back to the nearest one rather than leaving the
+         slider stale. Only reachable if the schema and the data ever disagree. */
+      let best=0, d=Infinity;
+      s.values.forEach((x,k)=>{ const dd=Math.abs(x-v); if(dd<d){ d=dd; best=k; } });
+      i=best;
+    }
+    s.input.value=i;
+    s.paint();
+  });
+}
+
+/* Put the result panel back to its resting state.
+
+   Choosing a different site while the previous verdict is still on screen reads as that verdict
+   belonging to the new site. Nothing is shown until the new site is actually scored. */
+function clearResult(){
+  drawGauge(null);
+  document.getElementById("band").innerHTML="&mdash;";
+  document.getElementById("pct").textContent="No site assessed yet";
+  document.getElementById("resSub").textContent="Awaiting input.";
+  renderWarnings([]);
+  renderFeatures({}, undefined);
+  showErr("");
+}
+
+function selectedSite(){
+  const el=document.getElementById("siteSel");
+  return SITES.find(x=>x.id==+el.value);
+}
+
+/* Choose a site from code. Setting .value alone leaves every `change` listener unaware, which
+   is exactly how the Random site button ended up moving the dropdown without moving the
+   sliders. */
+function selectSite(id){
+  const el=document.getElementById("siteSel");
+  el.value=String(id);
+  el.dispatchEvent(new Event("change"));
+}
+
+/* ---------- the walkable district ----------
+   A third way of asking the same question. The map answers "where is it worse", the gauge
+   answers "how bad is this one", and this answers "what would it be like to stand there". It
+   is deliberately the last thing loaded: three.js and the packed grid together are most of a
+   megabyte, and a reader who never opens the tab should never pay for them. */
+let WALK=null, WALK_Q=null, WALK_LOADING=false;
+
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const t=document.createElement("script");
+    t.src=src; t.onload=res; t.onerror=()=>rej(new Error(src));
+    document.head.appendChild(t);
+  });
+}
+
+/* Queue rather than drop. Choosing a site on the first tab should still have moved the
+   surveyor by the time anyone opens the fourth one. */
+function walkCmd(fn){ if(WALK) fn(WALK); else WALK_Q=fn; }
+
+async function ensureWalk(){
+  if(WALK||WALK_LOADING) return WALK;
+  WALK_LOADING=true;
+  try{
+    if(!window.THREE)
+      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js");
+    if(!window.RangamatiWalk)
+      await loadScript("{{ url_for('static', filename='walk.js') }}");
+    WALK=RangamatiWalk.init({
+      host:"walkHost", hud:"walkHud", banner:"walkBanner", intro:"walkIntro",
+      start:"walkStart", pad:"walkPad",
+      data:"{{ url_for('static', filename='walk_data.js') }}",
+      onArrive:reportWalk});
+    if(WALK&&WALK_Q){ WALK_Q(WALK); WALK_Q=null; }
+  }catch(err){
+    document.getElementById("walkHost").innerHTML=
+      '<p class="walk-fail">The three-dimensional view needs WebGL, and this browser is not ' +
+      'offering it. Every number it would show is on the District map tab.</p>';
+  }
+  WALK_LOADING=false;
+  return WALK;
+}
+
+function reportWalk(a){
+  document.getElementById("walkWhere").innerHTML =
+    `<b>Standing at ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}.</b> ` +
+    `${Math.round(a.elev)}&nbsp;m, slope ${a.slope.toFixed(1)}&deg;, ` +
+    `scored ${a.prob.toFixed(2)} &mdash; ${a.band}.`;
+}
+
+/* ---------- surveyed sites ---------- */
+let SITES=[];
+fetch("/api/sites").then(r=>r.json()).then(async d=>{
+  SITES=d;
+  document.getElementById("siteSel").innerHTML=d.map(s=>
+    `<option value="${s.id}">Site ${String(s.id+1).padStart(2,"0")} &middot; slope class ${s.features.SLOPE}, elevation class ${s.features.ELEVATION}</option>`).join("");
+  await SLIDERS_READY;
+  const s=selectedSite();
+  if(s){ setSliders(s.features); walkToSite(s); }
+});
+
+document.getElementById("siteSel").addEventListener("change",()=>{
+  const s=selectedSite();
+  if(!s) return;
+  setSliders(s.features);
+  clearResult();
+  document.getElementById("resSub").textContent=
+    `Site ${String(s.id+1).padStart(2,"0")} selected. Press Assess susceptibility to score it.`;
+  walkToSite(s);
+});
+
+/* An inventory row has an elevation class and a slope class and no coordinate, so the surveyor
+   is sent to ground that falls in both of those classes rather than to a place the row does not
+   name. The note says so, because a reader who is not told will assume it is the real site. */
+function walkToSite(s){
+  walkCmd(w=>{
+    const tag=`Site ${String(s.id+1).padStart(2,"0")}`;
+    const r=w.placeByClass(s.features.ELEVATION, s.features.SLOPE,
+      `${tag} records factor classes, not a coordinate. This is district ground in the same ` +
+      `elevation and slope classes.`);
+    if(r&&r.matches===0){
+      document.getElementById("walkWhere").innerHTML=
+        `<b>${tag} has no match in the district grid.</b> Its elevation and slope classes do ` +
+        `not both occur in any cell inside the boundary.`;
+    }else if(r&&r.matches){
+      const el=r.elev_lo===null?`below ${r.elev_hi} m`
+             :r.elev_hi===null?`${r.elev_lo} m and above`:`${r.elev_lo} to ${r.elev_hi} m`;
+      const sl=r.slope_lo===null?`below ${r.slope_hi}\u00b0`
+             :r.slope_hi===null?`${r.slope_lo}\u00b0 and above`
+             :`${r.slope_lo} to ${r.slope_hi}\u00b0`;
+      document.getElementById("walkWhere").insertAdjacentHTML("beforeend",
+        `<br><span class="sub">${tag}: ${el}, ${sl}. ` +
+        `${r.matches.toLocaleString()} cells in the district qualify; this is the median one.</span>`);
+    }
+  });
+}
+
+/* ---------- map ----------
+   Satellite imagery, because the factors being measured are visible in it: you can see the
+   ridge you just clicked. The district outline is the boundary that shipped with the original
+   repository, and it is drawn because the model only has evidence about ground inside it. */
+let MARKER=null, DISTRICT_BOUNDS=null, MAP_TOUCHED=false, FITTING=false;
+
+/* Frame the whole district. Called on first reveal as well as at load, because the map is built
+   while its tab is still display:none, and Leaflet measures a hidden container as zero-sized: the
+   fitBounds that runs when the boundary arrives is computed against nothing and lands at a
+   meaningless zoom. invalidateSize corrects the size but does not redo the fit, which is why the
+   tab opened deep inside Rangamati instead of showing it whole. */
+function fitDistrict(){
+  if(!window._map || !DISTRICT_BOUNDS) return;
+  FITTING=true;
+  window._map.invalidateSize();
+  window._map.fitBounds(DISTRICT_BOUNDS,{padding:[10,10]});
+  setTimeout(()=>{FITTING=false;},400);
+}
+
+try{
+  const map=L.map("map",{scrollWheelZoom:false}).setView([22.75,92.20],8);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {maxZoom:17,attribution:'Imagery: <a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noopener">Esri World Imagery</a> &mdash; Esri, Vantor, Earthstar Geographics, and the GIS User Community'}).addTo(map);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+    {maxZoom:17,opacity:.85,attribution:'Labels &copy; <a href="https://carto.com/attributions">CARTO</a>, data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
+
+  const dot=L.divIcon({className:"",iconSize:[16,16],
+    html:'<div style="width:14px;height:14px;border-radius:50%;background:#E9563A;'+
+         'border:2.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)"></div>'});
+  MARKER=L.marker([23.38,92.29],{icon:dot}).addTo(map);
+
+  /* Once the user has panned or zoomed, their view is theirs: only reframe automatically while
+     they have not touched it. fitDistrict's own movements are excluded. */
+  map.on("zoomend dragend",()=>{ if(!FITTING) MAP_TOUCHED=true; });
+
+  fetch("/api/boundary").then(r=>r.json()).then(b=>{
+    const poly=L.polygon(b.ring,{color:"#F5D76E",weight:1.6,opacity:.95,
+      fill:true,fillOpacity:.04,fillColor:"#F5D76E"}).addTo(map);
+    DISTRICT_BOUNDS=poly.getBounds();
+    fitDistrict();
+    document.getElementById("mapHint").innerHTML =
+      "Click anywhere inside the outline: <b>"+b.name+"</b>, "+
+      b.area_km2.toLocaleString()+" km&sup2;. Elevation is read from SRTM 30&thinsp;m, "+
+      "slope and aspect are computed from a 90&thinsp;m window.";
+  }).catch(()=>{});
+
+  map.on("click",e=>{
+    cancelDeviceLocation();
+    MARKER.setLatLng(e.latlng);
+    document.getElementById("lat").value=e.latlng.lat.toFixed(5);
+    document.getElementById("lon").value=e.latlng.lng.toFixed(5);
+    if(mode!=="mLive") document.getElementById("mLive").click();
+    assess();
+    walkCmd(w=>w.moveTo(e.latlng.lat, e.latlng.lng,
+      `Measured at ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}.`));
+  });
+  window._map=map;
+}catch(_){ /* offline: map absent, typing coordinates still works */ }
+
+/* Location access is requested only by the user's button click. */
+let deviceLocationRequest = 0;
+const locationButton = document.getElementById("useLocation");
+const locationStatus = document.getElementById("locationStatus");
+function cancelDeviceLocation() {
+  deviceLocationRequest++;
+  locationButton.disabled = false;
+  locationButton.textContent = "Use my location";
+  locationButton.removeAttribute("aria-busy");
+  locationStatus.textContent = "";
+}
+["lat", "lon"].forEach(id => document.getElementById(id).addEventListener("input", cancelDeviceLocation));
+locationButton.addEventListener("click", () => {
+  cancelDeviceLocation();
+  if (!navigator.geolocation || !window.isSecureContext) {
+    locationStatus.textContent = "Location access is unavailable here. Enter coordinates or choose a point on the map.";
+    return;
+  }
+  const requestId = deviceLocationRequest;
+  locationButton.disabled = true;
+  locationButton.textContent = "Finding your location…";
+  locationButton.setAttribute("aria-busy", "true");
+  locationStatus.textContent = "Allow location access in your browser to continue.";
+  function finish(message) {
+    locationButton.disabled = false;
+    locationButton.textContent = "Use my location";
+    locationButton.removeAttribute("aria-busy");
+    locationStatus.textContent = message;
+  }
+  navigator.geolocation.getCurrentPosition(position => {
+    if (requestId !== deviceLocationRequest || mode !== "mLive") return;
+    const lat = position.coords.latitude, lon = position.coords.longitude;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      finish("Your location could not be read. Enter coordinates or try again.");
+      return;
+    }
+    document.getElementById("lat").value = lat.toFixed(5);
+    document.getElementById("lon").value = lon.toFixed(5);
+    clearResult();
+    if (MARKER) MARKER.setLatLng([lat, lon]);
+    if (window._map) {
+      MAP_TOUCHED = true;
+      window._map.setView([lat, lon], 12, {animate: false});
+    }
+    const accuracy = position.coords.accuracy;
+    finish("Using your location" + (Number.isFinite(accuracy) ? " · accuracy about " + Math.round(accuracy).toLocaleString() + " m." : "."));
+    assess();
+  }, error => {
+    if (requestId !== deviceLocationRequest) return;
+    const messages = {
+      1: "Location permission was not granted. Enter coordinates or choose a point on the map.",
+      2: "Your location is unavailable. Enter coordinates or try again.",
+      3: "The location request timed out. Enter coordinates or try again."
+    };
+    finish(messages[error.code] || "Your location could not be read. Enter coordinates or try again.");
+  }, {enableHighAccuracy: true, timeout: 12000, maximumAge: 60000});
+});
+
+/* ---------- gauge ---------- */
+function drawGauge(p){
+  const svg=document.getElementById("gauge");
+  const R=62,C=80,start=-Math.PI*0.75,sweep=Math.PI*1.5;
+  const col=p<0.2?"#4E7A55":p<0.4?"#7C9A55":p<0.6?"#C79B33":p<0.8?"#C26A32":"#A8452C";
+  const arc=(a,b,color,w)=>{
+    const x1=C+R*Math.cos(a),y1=C+R*Math.sin(a),x2=C+R*Math.cos(b),y2=C+R*Math.sin(b);
+    return `<path d="M${x1} ${y1} A${R} ${R} 0 ${(b-a)>Math.PI?1:0} 1 ${x2} ${y2}" fill="none"
+      stroke="${color}" stroke-width="6" stroke-linecap="butt"/>`;
+  };
+  /* p === null means refused, not zero. A zero would read as a confident "no risk here". */
+  const none = (p === null || p === undefined || isNaN(p));
+  svg.innerHTML=arc(start,start+sweep,"var(--sunk)",6)
+    +(!none && p>0?arc(start,start+sweep*Math.max(p,0.012),col,12):"")
+    +`<text x="${C}" y="${C+5}" text-anchor="middle" font-family="Fraunces, Georgia, serif"
+       font-size="${none?30:40}" fill="var(--ink)">${none?"&#8212;":(p*100).toFixed(0)}</text>
+      <text x="${C}" y="${C+22}" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+       font-size="8" letter-spacing=".6" fill="var(--muted)">${none?"NOT ASSESSED":"PERCENT"}</text>`;
+}
+drawGauge(null);
+
+/* ---------- render ---------- */
+function showErr(m){document.getElementById("err").innerHTML=m?`<div class="err">${m}</div>`:"";}
+
+function renderFeatures(f, truth){
+  /* FEATURES order, not object order: a stable order lets the eye compare between sites */
+  f = f || {};
+  document.getElementById("featOut").innerHTML = FEATURES.map(k=>{
+    /* An absent feature is the empty state, not a value. Coercing it with `+f[k]` yields NaN,
+       and NaN comparisons are all false, so the bar fell through to full width with "NaN"
+       beside it: the resting panel looked like a confident reading of nothing. */
+    const has = f[k] !== undefined && f[k] !== null && !isNaN(+f[k]);
+    if(!has){
+      return `<div class="bar"><span class="n">${k}</span>
+        <span class="t"></span>
+        <span class="v" style="color:var(--muted)">&mdash;</span></div>`;
+    }
+    const v=+f[k], sc=SCHEMA[k];
+    const lo=sc?sc.min:0, hi=sc?sc.max:1;
+    const frac=(v-lo)/((hi-lo)||1);
+    const over=frac<0||frac>1;
+    const pct=Math.max(2,Math.min(100,frac*100));
+    return `<div class="bar"><span class="n">${k}</span>
+      <span class="t"><i class="${over?'over':''}" style="width:${pct.toFixed(1)}%"></i></span>
+      <span class="v" style="color:${over?'var(--clay)':'var(--body)'}">${v.toFixed(2)}</span></div>`;
+  }).join("")
+  + (truth===undefined?"":
+     `<p class="sub" style="margin-top:10px">Recorded outcome for this surveyed site:
+      <b style="color:${truth?'var(--clay)':'var(--moss)'}">${truth?'landslide':'no landslide'}</b></p>`);
+}
+
+function renderWarnings(ws){
+  const host=document.getElementById("warn");
+  if(!ws||!ws.length){host.innerHTML="";return;}
+  host.innerHTML=`<div class="alarm"><b>${ws.length} value${ws.length>1?"s":""} outside the
+    range this model was trained on.</b> ${ws.map(w=>
+      `<code>${w.feature}</code> = ${(+w.value).toFixed(2)} (trained on
+       ${w.trained_range?w.trained_range[0]+" to "+w.trained_range[1]:"?"})`).join("; ")}.
+    The probability shown is extrapolation and should not be relied on.</div>`;
+}
+
+let LIVE=null;
+
+/* A click outside the district is refused rather than scored. The model was fitted on one
+   district's terrain, so a number for anywhere else would be an extrapolation dressed as a
+   measurement, and a caveat printed under a large percentage does not get read. */
+function showRefusal(j){
+  document.getElementById("terrainOut").hidden=true;
+  document.getElementById("imgLinks").hidden=true;
+  const note=document.getElementById("liveNote");
+  note.hidden=false;
+  note.className="note-live warn";
+  note.innerHTML="<b>Outside the study area, so nothing is scored.</b> "+j.message+
+    " <br><br>"+j.hint;
+  drawGauge(null);
+  document.getElementById("band").textContent="Not assessed";
+  document.getElementById("pct").textContent="Outside the study area";
+  document.getElementById("resSub").textContent=
+    `No model evidence at ${(+j.lat).toFixed(4)}, ${(+j.lon).toFixed(4)}.`;
+  renderWarnings([]);
+  renderFeatures({}, undefined);
+  if(window.MARKER) window.MARKER.setLatLng([j.lat,j.lon]);
+}
+
+/* Show what was measured and what was held fixed. Three of the eight predictors can be obtained
+   from elevation; pretending otherwise is what broke the original live mode. */
+function showTerrain(j){
+  const box=document.getElementById("terrainOut"), note=document.getElementById("liveNote");
+  box.hidden=false; note.hidden=false;
+  document.getElementById("tElev").textContent=j.raw.ELEVATION_m.toFixed(0)+" m";
+  document.getElementById("tSlope").textContent=j.raw.SLOPE_deg.toFixed(2)+"\u00B0";
+  const oct=["N","NE","E","SE","S","SW","W","NW"][Math.floor(((j.raw.ASPECT_deg%360)+22.5)/45)%8];
+  document.getElementById("tAspect").textContent=j.raw.ASPECT_deg.toFixed(0)+"\u00B0 "+oct;
+  document.getElementById("tSrc").textContent=j.raw.source;
+
+  /* The page draws imagery it does not own, so let the reader go and look at the same ground in
+     the providers' own viewers. Zoom 16 is close enough to see the hillside that produced the
+     slope figure above. */
+  const la=(+j.lat).toFixed(6), lo=(+j.lon).toFixed(6);
+  const links={
+    lkGmap : `https://www.google.com/maps/@?api=1&map_action=map&center=${la},${lo}&zoom=16&basemap=satellite`,
+    lkGearth: `https://earth.google.com/web/search/${la},${lo}`,
+    lkEsri : `https://www.arcgis.com/apps/mapviewer/index.html?center=${lo},${la}&level=16`,
+    lkOsm  : `https://www.openstreetmap.org/#map=16/${la}/${lo}`
+  };
+  Object.entries(links).forEach(([id,href])=>{ document.getElementById(id).href=href; });
+  document.getElementById("imgLinks").hidden=false;
+
+  const tags=j.measured.map(k=>`<span class="tag">${k} measured</span>`)
+    .concat(j.assumed.map(k=>`<span class="tag assumed">${k} held</span>`)).join("");
+  note.className="note-live"+(j.in_study_area?"":" warn");
+  note.innerHTML =
+    (j.in_study_area ? "" :
+      `<b>Outside the study area.</b> ${j.outside_note} <br><br>`) +
+    `<b>What this number is.</b> ${j.reading} The model was trained on reclassified class ` +
+    `ratings rather than measurements, so the reading above is converted before scoring; that ` +
+    `conversion is reconstructed, not recovered. <div class="tagrow">${tags}</div>`;
+}
+
+async function assess(){
+  showErr("");
+  if(mode!=="mLive"){ LIVE=null;
+    document.getElementById("terrainOut").hidden=true;
+    document.getElementById("imgLinks").hidden=true;
+    document.getElementById("liveNote").hidden=true; }
+  const btn=document.getElementById("run"); btn.disabled=true; btn.textContent="Assessing…";
+  try{
+    let feats=null, truth=undefined;
+    if(mode==="mSite"){
+      const s=SITES.find(x=>x.id==+document.getElementById("siteSel").value);
+      if(!s) throw new Error("No site selected");
+      feats=s.features; truth=s.label;
+    }else if(mode==="mManual"){
+      feats={}; FEATURES.forEach(f=>{const s=sliders[f]; feats[f]=s?s.values[+s.input.value]:0;});
+    }else{
+      btn.textContent="Measuring terrain…";
+      const r=await fetch("/api/sample",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({lat:document.getElementById("lat").value,
+                             lon:document.getElementById("lon").value})});
+      const j=await r.json();
+      if(j && j.refused){ showRefusal(j); return; }
+      if(!r.ok) throw new Error((j.error||"sampling failed")+(j.detail?": "+j.detail:""));
+      feats=j.features;
+      showTerrain(j);
+      setSliders(feats);        /* so Factor classes opens on the terrain just measured */
+      LIVE=j;
+      walkCmd(w=>w.moveTo(+j.lat, +j.lon,
+        `Measured at ${(+j.lat).toFixed(4)}, ${(+j.lon).toFixed(4)}.`));
+    }
+    const r2=await fetch("/api/predict",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({features:feats})});
+    const res=await r2.json();
+    if(!r2.ok) throw new Error(res.error||"prediction failed");
+    drawGauge(res.probability);
+    document.getElementById("band").textContent=res.band+" susceptibility";
+    document.getElementById("pct").textContent=
+      `${(res.probability*100).toFixed(1)}% under the balanced sample · ${res.label}`;
+    document.getElementById("resSub").textContent =
+      mode==="mSite" ? "Site from the inventory (in-sample)."
+      : mode==="mManual" ? "Hypothetical factor classes, set by hand."
+      : (LIVE ? `Measured at ${(+LIVE.lat).toFixed(4)}, ${(+LIVE.lon).toFixed(4)} from SRTM 30 m.`
+              : "Measured live from SRTM.");
+    renderWarnings(res.warnings);
+    renderFeatures(res.features_used, truth);
+  }catch(e){ showErr(e.message||String(e)); }
+  finally{ btn.disabled=false; btn.textContent="Assess susceptibility"; }
+}
+document.getElementById("run").addEventListener("click",assess);
+document.getElementById("rand").addEventListener("click",()=>{
+  if(!SITES.length) return;
+  document.getElementById("mSite").click();
+  const s=SITES[Math.floor(Math.random()*SITES.length)];
+  /* Assigning to .value does not fire `change`, so selecting a site in code has to say so
+     explicitly. Going through the same event the user's own selection raises keeps one code
+     path: anything that changes the chosen site updates the sliders with it.
+
+     It deliberately stops there. Scoring the site as well left "Assess susceptibility" with
+     nothing to do, and made the button look decorative. Random site now does what it says:
+     it chooses one. */
+  selectSite(s.id);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+/* Rangamati application identity: limestone, forest green, and terrain clay. */
+:root {
+  color-scheme: light;
+  --ground: #eef0e8; --surface: #f8f8f3; --sunk: #e5e9df;
+  --ink: #23372f; --body: #42554c; --muted: #67756b; --faint: #67756b;
+  --rule: #cfd7cd; --grid: #e2e7dc;
+  --moss: #3b6550; --moss-soft: #e5edde;
+  --clay: #a36243; --clay-soft: #f0e5d9;
+  --amber: #99712e; --amber-soft: #f2ebd9;
+  --slate: #23372f; --button-ink: #f8f8f3;
+  --display: 'Fraunces', Georgia, serif;
+  --sans: 'DM Sans', Arial, sans-serif;
+  --mono: 'IBM Plex Mono', Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ground: #19211d; --surface: #202b24; --sunk: #27332b;
+    --ink: #edf1e8; --body: #c5cec4; --muted: #a2b0a1; --faint: #a2b0a1;
+    --rule: #3b4a3f; --grid: #344237;
+    --moss: #a2bf94; --moss-soft: #2e402e;
+    --clay: #dda17d; --clay-soft: #40332a;
+    --amber: #dfbb7b; --amber-soft: #393324;
+    --slate: #edf1e8; --button-ink: #19211d;
+  }
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #19211d; --surface: #202b24; --sunk: #27332b;
+  --ink: #edf1e8; --body: #c5cec4; --muted: #a2b0a1; --faint: #a2b0a1;
+  --rule: #3b4a3f; --grid: #344237;
+  --moss: #a2bf94; --moss-soft: #2e402e;
+  --clay: #dda17d; --clay-soft: #40332a;
+  --amber: #dfbb7b; --amber-soft: #393324;
+  --slate: #edf1e8; --button-ink: #19211d;
+}
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+[hidden] { display: none !important; }
+::selection { background: var(--moss-soft); color: var(--ink); }
+a { color: inherit; text-underline-offset: 4px; text-decoration-color: var(--rule); }
+a:hover { color: var(--clay); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--moss); outline-offset: 4px;
+}
+.skip-link { position: fixed; left: 20px; top: -100px; z-index: 2000; padding: 10px 18px; background: var(--ink); color: var(--ground); }
+.skip-link:focus { top: 12px; }
+.app-header { display: flex; gap: 28px; align-items: center; min-height: 82px; border-bottom: 1px solid var(--rule); }
+.app-header .app-brand { display: inline-flex; align-items: center; gap: 11px; font: 600 17px var(--sans); color: var(--ink); text-decoration: none; border: 0; white-space: nowrap; }
+.app-brand svg { display: block; width: 34px; height: 34px; fill: none; stroke: var(--moss); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.app-brand small { display: block; margin-top: 3px; font: 11px var(--sans); color: var(--muted); }
+.app-header nav { display: flex; align-items: center; gap: 25px; margin-left: auto; }
+.app-header nav a { font: 12px var(--sans); text-decoration: none; border: 0; }
+.app-header nav a:hover { color: var(--moss); }
+.theme-button { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 7px 12px; font: 11px var(--sans); color: var(--body); min-width: 52px; }
+.theme-button:hover { border-color: var(--moss); color: var(--moss); }
+@media (max-width: 700px) {
+  .app-header { flex-wrap: wrap; gap: 18px; padding: 18px 0 16px; }
+  .app-header nav { order: 3; width: 100%; justify-content: space-between; gap: 16px; }
+  .theme-button { margin-left: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
