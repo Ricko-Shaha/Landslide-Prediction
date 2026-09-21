@@ -47,9 +47,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .skip-link { position: fixed; left: 20px; top: -100px; z-index: 2000; padding: 10px 18px; background: var(--ink); color: var(--ground); }
 .skip-link:focus { top: 12px; }
 .app-header { display: flex; gap: 28px; align-items: center; min-height: 82px; border-bottom: 1px solid var(--rule); }
-.app-header .app-brand { display: inline-flex; align-items: center; gap: 11px; font: 600 17px var(--sans); color: var(--ink); text-decoration: none; border: 0; white-space: nowrap; }
-.app-brand svg { display: block; width: 34px; height: 34px; fill: none; stroke: var(--moss); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.app-brand small { display: block; margin-top: 3px; font: 11px var(--sans); color: var(--muted); }
+.app-header .app-brand { display: inline-flex; align-items: center; gap: 11px; font: 600 17px var(--sans); color: var(--ink); text-decoration: none; border: 0; white-space: normal; min-width: 0; flex: 1; max-width: 25rem; padding: 12px 0; }
+.app-brand svg { display: block; width: 34px; height: 34px; flex-shrink: 0; fill: none; stroke: var(--moss); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.app-brand small { display: block; margin-top: 3px; font: 11px/1.5 var(--sans); color: var(--muted); }
 .app-header nav { display: flex; align-items: center; gap: 25px; margin-left: auto; }
 .app-header nav a { font: 12px var(--sans); text-decoration: none; border: 0; }
 .app-header nav a:hover { color: var(--moss); }

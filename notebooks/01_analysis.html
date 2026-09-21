@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Landslide susceptibility, Rangamati Hill Tracts</title>
+<title>Landslide susceptibility, Rangamati Hill Tracts (a district within Chattogram division, Bangladesh)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -54,9 +54,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .skip-link { position: fixed; left: 20px; top: -100px; z-index: 2000; padding: 10px 18px; background: var(--ink); color: var(--ground); }
 .skip-link:focus { top: 12px; }
 .app-header { display: flex; gap: 28px; align-items: center; min-height: 82px; border-bottom: 1px solid var(--rule); }
-.app-header .app-brand { display: inline-flex; align-items: center; gap: 11px; font: 600 17px var(--sans); color: var(--ink); text-decoration: none; border: 0; white-space: nowrap; }
-.app-brand svg { display: block; width: 34px; height: 34px; fill: none; stroke: var(--moss); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.app-brand small { display: block; margin-top: 3px; font: 11px var(--sans); color: var(--muted); }
+.app-header .app-brand { display: inline-flex; align-items: center; gap: 11px; font: 600 17px var(--sans); color: var(--ink); text-decoration: none; border: 0; white-space: normal; min-width: 0; flex: 1; max-width: 25rem; padding: 12px 0; }
+.app-brand svg { display: block; width: 34px; height: 34px; flex-shrink: 0; fill: none; stroke: var(--moss); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.app-brand small { display: block; margin-top: 3px; font: 11px/1.5 var(--sans); color: var(--muted); }
 .app-header nav { display: flex; align-items: center; gap: 25px; margin-left: auto; }
 .app-header nav a { font: 12px var(--sans); text-decoration: none; border: 0; }
 .app-header nav a:hover { color: var(--moss); }
@@ -163,13 +163,13 @@ blockquote p:last-child{margin-bottom:0}
 <script>window.MathJax={tex:{inlineMath:[["\\(","\\)"]],displayMath:[["$$","$$"]]}};</script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
 </head><body><div class="wrap">
-<header class="app-header"><a class="app-brand" href="/" id="app-home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 27 14 10l6 10 4-6 8 13M9 27l5-8 5 8M4 32h28"/></svg><span>Rangamati<small>Analysis notebook</small></span></a><button class="theme-button" id="themer" type="button" aria-label="Switch color theme" style="margin-left:auto">Theme</button></header>
+<header class="app-header"><a class="app-brand" href="/" id="app-home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 27 14 10l6 10 4-6 8 13M9 27l5-8 5 8M4 32h28"/></svg><span>Rangamati Hill Tracts<small>(a district within Chattogram division, Bangladesh)</small><small>Analysis notebook</small></span></a><button class="theme-button" id="themer" type="button" aria-label="Switch color theme" style="margin-left:auto">Theme</button></header>
 <div class="banner">Analysis notebook &middot; <b>01_analysis.ipynb</b><br>The data, evaluation, and decisions behind the susceptibility model.</div>
 <script>if(location.protocol==='file:')document.getElementById('app-home').href='http://127.0.0.1:5000/';</script>
-<div class="cell"><h1>Landslide susceptibility, Rangamati Hill Tracts</h1>
+<div class="cell"><h1>Landslide susceptibility, Rangamati Hill Tracts (a district within Chattogram division, Bangladesh)</h1>
 <p><strong>Undergraduate thesis, Chittagong University of Engineering &amp; Technology.</strong></p>
 <p>This notebook is the argument of the project in the order the evidence actually arrived. It is meant to be read top to bottom and it is meant to be re-runnable: every number printed below is computed here, not quoted from somewhere else.</p>
-<p>The original work trained a classifier on an inventory of 392 sites and served it from a web application that returned a landslide probability for any coordinate the user clicked. <strong>The inventory is not mine.</strong> It traces back to fieldwork by Rabby and Li, who mapped landslides across the Chittagong Hilly Areas from Google Earth imagery and field survey (<a href="https://doi.org/10.3390/data5010004">10.3390/data5010004</a>, CC BY), and to the Rangamati susceptibility study of Rabby, Hossain and Abedin (<a href="https://doi.org/10.1080/10106049.2020.1864026">10.1080/10106049.2020.1864026</a>). The CSV read here was published by Inan and Rahman (<a href="https://doi.org/10.1007/s42979-023-01960-5">10.1007/s42979-023-01960-5</a>) under MIT, and the copy in this repository matches theirs byte for byte. Full chain in <code>DATA_SOURCES.md</code>.</p>
+<p>The original work trained a classifier on an inventory of 392 sites and served it from a web application that returned a landslide probability for any coordinate the user clicked. <strong>The inventory is not mine.</strong> It traces back to fieldwork by Rabby and Li, who mapped landslides across the Chittagong Hilly Areas from Google Earth imagery and field survey (<a href="https://doi.org/10.3390/data5010004">10.3390/data5010004</a>, CC BY), and to the Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) susceptibility study of Rabby, Hossain and Abedin (<a href="https://doi.org/10.1080/10106049.2020.1864026">10.1080/10106049.2020.1864026</a>). The CSV read here was published by Inan and Rahman (<a href="https://doi.org/10.1007/s42979-023-01960-5">10.1007/s42979-023-01960-5</a>) under MIT, and the copy in this repository matches theirs byte for byte. Full chain in <code>DATA_SOURCES.md</code>.</p>
 <p>Restructuring the project turned up four things worth writing down, and they are the spine of this notebook:</p>
 <ol><li><strong>The training columns are not measurements.</strong> They are reclassified class ratings, and the deployed application was feeding the model raw satellite readings instead. Every live answer was computed from inputs the model had never seen.</li><li><strong>The model comparison was not stable.</strong> Nine models were ranked on one 75/25 split. Change the seed and the ranking changes.</li><li><strong>So accuracy could not choose the model, and something else had to.</strong> That problem is what the TOS paper came out of, and TOS is what selects the model here.</li><li><strong>The output is not a probability of failure.</strong> The inventory is balanced by construction, so the number ranks sites against each other and overstates absolute risk.</li></ol>
 <p>Two things that did not work in the original are fixed: the app no longer needs a Google Earth Engine credential to start, and live coordinate lookup produces inputs the model can actually interpret.</p></div>
@@ -206,7 +206,7 @@ pandas 3.0.5 | numpy 2.4.4
 <div class="cell"><hr>
 <h2>1. The inventory</h2>
 <p>392 sites, balanced 196 landslide and 196 non-landslide <strong>by construction</strong>. That balance is a sampling decision, not a property of the terrain, and it comes back in section 6.</p>
-<p>One thing to keep in view while reading the rest: the inventory is reused, not collected here (see the header above). The study area is Rangamati District, Bangladesh, which the upstream susceptibility paper states and which the boundary polygon used from section 7 onward corroborates independently at 5,782 km² against the district's ~6,116 km² of record. What no published source documents is which inventory records became which of these 392 rows.</p></div>
+<p>One thing to keep in view while reading the rest: the inventory is reused, not collected here (see the header above). The study area is Rangamati Hill Tracts (a district within Chattogram division, Bangladesh), which the upstream susceptibility paper states and which the boundary polygon used from section 7 onward corroborates independently at 5,782 km² against the district's ~6,116 km² of record. What no published source documents is which inventory records became which of these 392 rows.</p></div>
 <div class="cell"><div class="src">df = pd.read_csv(ROOT / "data" / "landslide_inventory.csv")
 print("rows %d, columns %d" % df.shape)
 print("landslide %d | non-landslide %d" % (int(df.Y.sum()), int((1 - df.Y).sum())))
@@ -869,7 +869,7 @@ fig.tight_layout(); plt.show()</div><div class="fig"><img alt="figure" src="data
 <h2>7. Rebuilding the bridge from measurement to class rating</h2>
 <p>Section 2 showed the model cannot read a raw satellite reading. The conversion table was never recorded in the first version, so <code>src/reclassify.py</code> reconstructs it. What is recoverable, and what is assumed:</p>
 <table><thead><tr><th></th><th>source</th></tr></thead><tbody><tr><td>how many classes each factor has</td><td>the ratings sum to 100 (section 2)</td></tr><tr><td>the order of the classes</td><td>rating rises with landslide rate (section 2)</td></tr><tr><td><strong>where one class stops and the next begins</strong></td><td><strong>assumed</strong>: standard physical breaks</td></tr></tbody></table>
-<p>The study area came out of the repository too. An undocumented file called <code>coordinates_3</code> held 11,774 bare <code>lon,lat</code> pairs; they form a single closed ring enclosing 5,782 km², which identifies it as the Rangamati district boundary rather than a list of sample sites.</p></div>
+<p>The study area came out of the repository too. An undocumented file called <code>coordinates_3</code> held 11,774 bare <code>lon,lat</code> pairs; they form a single closed ring enclosing 5,782 km², which identifies it as the Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) boundary rather than a list of sample sites.</p></div>
 <div class="cell"><div class="src">import study_area, reclassify
 
 print("study area : %s" % json.loads(
@@ -901,7 +901,7 @@ held fixed, because a point query cannot measure them:
    RAINFALL  = 21   no rainfall grid cached; run python src/rainfall.py to mea
    LANDUSE   = 29   hill forest, the dominant cover of the district; needs MOD
 </pre></div>
-<div class="cell"><p>An earlier version of this file placed the cut points at <strong>quantiles of the district's own terrain</strong>, so each class would cover an equal share of the ground. That is defensible in the abstract and wrong here, for a reason worth keeping: the inventory is balanced 196/196 by design and is therefore <strong>not a random sample of the district</strong>. Its slope class 22 has a 1.00 observed landslide rate. Mapping the district's median hillside into that class declared half of Rangamati a certainty and every coordinate came back above 0.96. Quantile matching only works when both distributions describe the same population.</p></div>
+<div class="cell"><p>An earlier version of this file placed the cut points at <strong>quantiles of the district's own terrain</strong>, so each class would cover an equal share of the ground. That is defensible in the abstract and wrong here, for a reason worth keeping: the inventory is balanced 196/196 by design and is therefore <strong>not a random sample of the district</strong>. Its slope class 22 has a 1.00 observed landslide rate. Mapping the district's median hillside into that class declared half of Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) a certainty and every coordinate came back above 0.96. Quantile matching only works when both distributions describe the same population.</p></div>
 <div class="cell"><hr>
 <h2>8. A live coordinate, end to end</h2>
 <p>The feature the project exists for. Elevation comes from <a href="https://doi.org/10.5066/F7PR7TFT">SRTM 30 m</a> through <a href="https://www.opentopodata.org/datasets/srtm/">OpenTopoData</a>, a public endpoint that needs no account; slope and aspect are computed from a 3×3 window by Horn's method; the result is converted to class ratings and scored.</p>
@@ -981,7 +981,7 @@ pd.DataFrame(out)</div><div class='tbl'><table border="1" class="dataframe">
   </tbody>
 </table></div></div>
 <div class="cell"><p>Zero out-of-domain warnings, which is the whole point of section 7: the values reaching the model are now class ratings it recognises. The ordering is also physically sensible, with the lake shore near the bottom and the 291 m ridge at the top.</p>
-<p>A point outside Rangamati returns <strong>no score at all</strong>. The model has evidence about one district's terrain; a number for anywhere else would be an extrapolation presented as a measurement.</p>
+<p>A point outside Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) returns <strong>no score at all</strong>. The model has evidence about one district's terrain; a number for anywhere else would be an extrapolation presented as a measurement.</p>
 <p>Note what is measured and what is not. Only three of the eight predictors come from elevation, and the other five are held at fixed classes, so the difference between two coordinates is attributable to terrain.</p></div>
 <div class="cell"><div class="src">raw = terrain.sample_point(23.3800, 92.2900)
 conv = reclassify.reclassify(raw)
@@ -1143,5 +1143,5 @@ fig.tight_layout(); plt.show()</div><div class="fig"><img alt="figure" src="data
 <hr>
 <p><strong>Model selection.</strong> Shaha, R., Talukder, D., Iqbal, M. A. and Haque, M. M. (2021). TOS: A Relative Metric Approach for Model Selection in Machine Learning Solutions. <em>IEEE RAAICON</em>, 26-31. DOI <a href="https://doi.org/10.1109/raaicon54709.2021.9929722">10.1109/raaicon54709.2021.9929722</a></p>
 <p><strong>Data.</strong> Elevation: <a href="https://doi.org/10.5066/F7PR7TFT">SRTM 30 m</a> (<code>USGS/SRTMGL1_003</code>) served by <a href="https://www.opentopodata.org/datasets/srtm/">OpenTopoData</a>. Rainfall: <a href="https://power.larc.nasa.gov/">NASA POWER</a> climatology (<a href="https://power.larc.nasa.gov/docs/services/api/temporal/climatology/">PRECTOTCORR</a>). Map imagery: <a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9">Esri World Imagery</a>, labels by <a href="https://carto.com/attributions">CARTO</a> and <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.</p>
-<p><strong>Landslide inventory.</strong> Original fieldwork: Rabby, Y. W. and Li, Y. (2020), <em>Data</em> 5(1), 4, CC BY, <a href="https://doi.org/10.3390/data5010004">10.3390/data5010004</a>. Rangamati susceptibility study: Rabby, Hossain and Abedin (2021), <em>Geocarto International</em>, <a href="https://doi.org/10.1080/10106049.2020.1864026">10.1080/10106049.2020.1864026</a>. CSV as read here: Inan and Rahman (2023), <em>SN Computer Science</em>, <a href="https://doi.org/10.1007/s42979-023-01960-5">10.1007/s42979-023-01960-5</a>, MIT. Full chain and licences in <code>DATA_SOURCES.md</code>.</p></div>
+<p><strong>Landslide inventory.</strong> Original fieldwork: Rabby, Y. W. and Li, Y. (2020), <em>Data</em> 5(1), 4, CC BY, <a href="https://doi.org/10.3390/data5010004">10.3390/data5010004</a>. Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) susceptibility study: Rabby, Hossain and Abedin (2021), <em>Geocarto International</em>, <a href="https://doi.org/10.1080/10106049.2020.1864026">10.1080/10106049.2020.1864026</a>. CSV as read here: Inan and Rahman (2023), <em>SN Computer Science</em>, <a href="https://doi.org/10.1007/s42979-023-01960-5">10.1007/s42979-023-01960-5</a>, MIT. Full chain and licences in <code>DATA_SOURCES.md</code>.</p></div>
 </div></body></html>

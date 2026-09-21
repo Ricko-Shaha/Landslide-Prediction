@@ -228,7 +228,7 @@ def convert(nb_path: Path, out_path: Path) -> Path:
 <script>window.MathJax={tex:{inlineMath:[["\\\\(","\\\\)"]],displayMath:[["$$","$$"]]}};</script>
 <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
 </head><body><div class="wrap">
-<header class="app-header"><a class="app-brand" href="/" id="app-home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 27 14 10l6 10 4-6 8 13M9 27l5-8 5 8M4 32h28"/></svg><span>Rangamati<small>Analysis notebook</small></span></a><button class="theme-button" id="themer" type="button" aria-label="Switch color theme" style="margin-left:auto">Theme</button></header>
+<header class="app-header"><a class="app-brand" href="/" id="app-home"><svg viewBox="0 0 36 36" aria-hidden="true"><path d="M4 27 14 10l6 10 4-6 8 13M9 27l5-8 5 8M4 32h28"/></svg><span>Rangamati Hill Tracts<small>(a district within Chattogram division, Bangladesh)</small><small>Analysis notebook</small></span></a><button class="theme-button" id="themer" type="button" aria-label="Switch color theme" style="margin-left:auto">Theme</button></header>
 <div class="banner">Analysis notebook &middot; <b>%s</b><br>The data, evaluation, and decisions behind the susceptibility model.</div>
 <script>if(location.protocol==='file:')document.getElementById('app-home').href='http://127.0.0.1:5000/';</script>
 %s

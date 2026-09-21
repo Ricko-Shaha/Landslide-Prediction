@@ -37,7 +37,7 @@ def code(src): cells.append((CODE, src.strip("\n")))
 
 # ==================================================================================== 0. intro
 md(r"""
-# Landslide susceptibility, Rangamati Hill Tracts
+# Landslide susceptibility, Rangamati Hill Tracts (a district within Chattogram division, Bangladesh)
 
 **Undergraduate thesis, Chittagong University of Engineering & Technology.**
 
@@ -49,7 +49,7 @@ The original work trained a classifier on an inventory of 392 sites and served i
 application that returned a landslide probability for any coordinate the user clicked. **The
 inventory is not mine.** It traces back to fieldwork by Rabby and Li, who mapped landslides across
 the Chittagong Hilly Areas from Google Earth imagery and field survey
-([10.3390/data5010004](https://doi.org/10.3390/data5010004), CC BY), and to the Rangamati
+([10.3390/data5010004](https://doi.org/10.3390/data5010004), CC BY), and to the Rangamati Hill Tracts (a district within Chattogram division, Bangladesh)
 susceptibility study of Rabby, Hossain and Abedin
 ([10.1080/10106049.2020.1864026](https://doi.org/10.1080/10106049.2020.1864026)). The CSV read
 here was published by Inan and Rahman
@@ -115,7 +115,7 @@ md(r"""
 sampling decision, not a property of the terrain, and it comes back in section 6.
 
 One thing to keep in view while reading the rest: the inventory is reused, not collected here
-(see the header above). The study area is Rangamati District, Bangladesh, which the upstream
+(see the header above). The study area is Rangamati Hill Tracts (a district within Chattogram division, Bangladesh), which the upstream
 susceptibility paper states and which the boundary polygon used from section 7 onward
 corroborates independently at 5,782 km² against the district's ~6,116 km² of record. What no
 published source documents is which inventory records became which of these 392 rows.
@@ -487,7 +487,7 @@ and what is assumed:
 
 The study area came out of the repository too. An undocumented file called `coordinates_3` held
 11,774 bare `lon,lat` pairs; they form a single closed ring enclosing 5,782 km², which identifies
-it as the Rangamati district boundary rather than a list of sample sites.
+it as the Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) boundary rather than a list of sample sites.
 """)
 
 code(r"""
@@ -514,7 +514,7 @@ An earlier version of this file placed the cut points at **quantiles of the dist
 terrain**, so each class would cover an equal share of the ground. That is defensible in the
 abstract and wrong here, for a reason worth keeping: the inventory is balanced 196/196 by design
 and is therefore **not a random sample of the district**. Its slope class 22 has a 1.00 observed
-landslide rate. Mapping the district's median hillside into that class declared half of Rangamati
+landslide rate. Mapping the district's median hillside into that class declared half of Rangamati Hill Tracts (a district within Chattogram division, Bangladesh)
 a certainty and every coordinate came back above 0.96. Quantile matching only works when both
 distributions describe the same population.
 """)
@@ -565,7 +565,7 @@ Zero out-of-domain warnings, which is the whole point of section 7: the values r
 are now class ratings it recognises. The ordering is also physically sensible, with the lake shore
 near the bottom and the 291 m ridge at the top.
 
-A point outside Rangamati returns **no score at all**. The model has evidence about one district's
+A point outside Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) returns **no score at all**. The model has evidence about one district's
 terrain; a number for anywhere else would be an extrapolation presented as a measurement.
 
 Note what is measured and what is not. Only three of the eight predictors come from elevation, and
@@ -698,7 +698,7 @@ labels by [CARTO](https://carto.com/attributions) and
 [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors.
 
 **Landslide inventory.** Original fieldwork: Rabby, Y. W. and Li, Y. (2020), *Data* 5(1), 4,
-CC BY, [10.3390/data5010004](https://doi.org/10.3390/data5010004). Rangamati susceptibility study:
+CC BY, [10.3390/data5010004](https://doi.org/10.3390/data5010004). Rangamati Hill Tracts (a district within Chattogram division, Bangladesh) susceptibility study:
 Rabby, Hossain and Abedin (2021), *Geocarto International*,
 [10.1080/10106049.2020.1864026](https://doi.org/10.1080/10106049.2020.1864026). CSV as read here:
 Inan and Rahman (2023), *SN Computer Science*,
