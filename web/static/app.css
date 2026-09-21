@@ -344,13 +344,15 @@ footer a:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-r
   color:var(--ink)}
 
 .walk-pad{position:absolute;right:12px;bottom:46px;display:none;flex-direction:column;
-  align-items:center;gap:5px;touch-action:none}
+  align-items:center;gap:6px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .walk-pad div{display:flex;gap:5px}
-.walk-pad button{width:38px;height:34px;border:1px solid var(--rule);border-radius:2px;
+.walk-pad button{width:48px;height:48px;border:1px solid var(--rule);border-radius:8px;touch-action:none;
   background:var(--surface);color:var(--body);font-size:11px;cursor:pointer;
   display:flex;align-items:center;justify-content:center}
-.walk-pad button:active{background:var(--moss);color:var(--surface);border-color:var(--moss)}
-@media(hover:none){.walk-pad{display:flex}}
+.walk-pad button:active,.walk-pad button.is-held{background:var(--moss);color:var(--surface);border-color:var(--moss)}
+.walk-touch-help{display:none}
+@media(hover:none),(any-pointer:coarse){.walk-pad{display:flex}.walk-touch-help{display:inline}.walk-keyboard-help{display:none}}
+.walk-intro:not([hidden]) ~ .walk-pad{display:none}
 @media(max-width:620px){
   /* The readout is a grid here, not a wrap: five cells of unknown width would otherwise
      decide the bar's height for us, and the thumb pad has to know where the bar ends. */
@@ -371,6 +373,6 @@ footer a:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-r
   .walk-hud u{width:7px;height:7px}
   /* Two rows of the grid above, plus room to breathe. */
   .walk-pad{bottom:80px;right:10px;gap:6px}
-  .walk-pad button{width:46px;height:42px;font-size:12px}
+  .walk-pad button{width:48px;height:48px;font-size:12px}
   #walkHost{height:430px}
 }

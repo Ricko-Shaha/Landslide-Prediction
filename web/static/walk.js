@@ -146,7 +146,7 @@ window.RangamatiWalk = (function () {
     var raf = null, reduced = false, started = false, active = false;
     var state = "walk", fuse = 0, fallT = 0, shake = 0, grace = false, placed = false;
     var walked = 0, falls = 0, safeSpot = null, gradeDir;
-    var keys = {}, phase = 0, facing = 0, clock = 0;
+    var keys = {}, touchKeys = {}, heldPointers = new Map(), phase = 0, facing = 0, clock = 0;
     var camPos, camAim, camTarget, camLook;
 
     function build() {
@@ -442,14 +442,22 @@ window.RangamatiWalk = (function () {
         if (!active) return;
         var m = MOVE[e.key];
         if (m) { keys[m] = true; e.preventDefault(); }
-        else if (e.key === "Escape") { active = false; say("Paused. Click the map to take over again."); }
+        else if (e.key === "Escape") { clearInput(); active = false; say("Paused. Touch the controls or click the map to continue."); }
       });
       window.addEventListener("keyup", function (e) {
         var m = MOVE[e.key];
         if (m) keys[m] = false;
       });
       /* Losing the window with a key held would otherwise leave the surveyor jogging forever. */
-      window.addEventListener("blur", function () { keys = {}; });
+      window.addEventListener("blur", clearInput);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) clearInput();
+      });
+      if (window.IntersectionObserver) {
+        new IntersectionObserver(function (entries) {
+          if (!entries[0].isIntersecting) clearInput();
+        }).observe(host);
+      }
 
       renderer.domElement.addEventListener("pointerdown", function () {
         if (started) active = true;
@@ -462,22 +470,51 @@ window.RangamatiWalk = (function () {
 
       if (pad) {
         pad.addEventListener("pointerdown", padOn);
+        pad.addEventListener("pointermove", padMove);
         pad.addEventListener("pointerup", padOff);
-        pad.addEventListener("pointerleave", padOff);
         pad.addEventListener("pointercancel", padOff);
+        pad.addEventListener("lostpointercapture", padOff);
         pad.addEventListener("contextmenu", function (e) { e.preventDefault(); });
       }
     }
 
     function padOn(e) {
-      var b = e.target.closest("button");
-      if (!b) return;
+      var b = e.target.closest("button[data-k]");
+      if (!b || e.button !== 0) return;
       e.preventDefault();
       if (!started) start();
       active = true;
-      keys[b.dataset.k] = true;
+      heldPointers.set(e.pointerId, b.dataset.k);
+      pad.setPointerCapture(e.pointerId);
+      updatePad();
     }
-    function padOff() { keys = {}; }
+    function padMove(e) {
+      if (!heldPointers.has(e.pointerId)) return;
+      e.preventDefault();
+      // Capture keeps release reliable; hit testing lets a thumb slide between arrows.
+      var hit = document.elementFromPoint(e.clientX, e.clientY);
+      var b = hit && hit.closest("button[data-k]");
+      heldPointers.set(e.pointerId, b && pad.contains(b) ? b.dataset.k : null);
+      updatePad();
+    }
+    function padOff(e) {
+      heldPointers.delete(e.pointerId);
+      updatePad();
+    }
+    function updatePad() {
+      touchKeys = {};
+      heldPointers.forEach(function (direction) {
+        if (direction) touchKeys[direction] = true;
+      });
+      if (pad) pad.querySelectorAll("button[data-k]").forEach(function (b) {
+        b.classList.toggle("is-held", !!touchKeys[b.dataset.k]);
+      });
+    }
+    function clearInput() {
+      keys = {};
+      heldPointers.clear();
+      updatePad();
+    }
 
     function start() {
       started = true;
@@ -563,10 +600,10 @@ window.RangamatiWalk = (function () {
 
     function step(dt) {
       var vx = 0, vz = 0;
-      if (keys.f) vz -= 1;
-      if (keys.b) vz += 1;
-      if (keys.l) vx -= 1;
-      if (keys.r) vx += 1;
+      if (keys.f || touchKeys.f) vz -= 1;
+      if (keys.b || touchKeys.b) vz += 1;
+      if (keys.l || touchKeys.l) vx -= 1;
+      if (keys.r || touchKeys.r) vx += 1;
 
       var moving = vx || vz;
       if (moving) grace = false;
