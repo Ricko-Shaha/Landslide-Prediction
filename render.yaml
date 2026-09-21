@@ -1,6 +1,7 @@
 services:
   - type: web
-    name: rangamati-landslide
+    name: landslide-rangamati
+    region: singapore
     runtime: python
     plan: free
     buildCommand: pip install -r requirements-production.txt && python -m unittest discover -s tests
