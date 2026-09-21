@@ -221,6 +221,13 @@ because each cell needs its own elevation window from a shared public endpoint.
 
 ### Walking it
 
+On phones, touch anywhere on the terrain and slide to steer. Keep holding to continue moving,
+slide back to the starting point or lift to stop. A small floating indicator follows the gesture;
+there are no on-screen arrow buttons. Longer drags move faster, and movement follows the direction
+on screen. Desktop arrow keys and WASD still work; mouse dragging is also supported. Interrupted
+touches, changing tabs, and leaving the view clear the controls so movement cannot get stuck.
+The portfolio uses the same simulator and touch behavior.
+
 The **Walk it** tab draws the same grid as a solid: every cell inside the boundary at the
 elevation SRTM reports for it, coloured by the probability the selected model assigns it, with a
 figure you steer across it. The rule it enforces is the model's own classification and not

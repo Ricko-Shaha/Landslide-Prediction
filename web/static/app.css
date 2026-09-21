@@ -303,9 +303,9 @@ footer a:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-r
 @media(max-width:900px){.wgrid{grid-template-columns:1fr}}
 .wshell{position:relative;border:1px solid var(--rule);border-radius:2px;overflow:hidden;
   background:var(--sunk)}
-#walkHost{height:520px;width:100%;display:block;touch-action:none}
-#walkHost canvas{display:block}
-@media(max-width:900px){ #walkHost{height:380px}}
+#walkHost{position:relative;height:520px;width:100%;display:block;touch-action:none}
+#walkHost canvas{display:block;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+@media(max-width:900px){ #walkHost{position:relative;height:380px}}
 .walk-fail{padding:26px 20px;color:var(--muted);font-size:13.5px;margin:0}
 
 .walk-hud{position:absolute;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;padding:0;
@@ -343,19 +343,18 @@ footer a:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-r
   border-radius:2px;padding:1px 5px;margin-right:3px;background:var(--surface);font:inherit;
   color:var(--ink)}
 
-.walk-pad{position:absolute;right:12px;bottom:46px;display:none;flex-direction:column;
-  align-items:center;gap:6px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.walk-pad div{display:flex;gap:5px}
-.walk-pad button{width:48px;height:48px;border:1px solid var(--rule);border-radius:8px;touch-action:none;
-  background:var(--surface);color:var(--body);font-size:11px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center}
-.walk-pad button:active,.walk-pad button.is-held{background:var(--moss);color:var(--surface);border-color:var(--moss)}
+/* A floating touch indicator appears only while steering the terrain. */
+.walk-gesture{position:absolute;width:76px;height:76px;transform:translate(-50%,-50%);
+  border:1px solid rgba(255,255,255,.6);border-radius:50%;background:rgba(20,28,23,.12);
+  pointer-events:none;z-index:1}
+.walk-gesture[hidden]{display:none}
+.walk-gesture span{position:absolute;left:50%;top:50%;width:16px;height:16px;
+  border:1px solid rgba(20,28,23,.35);border-radius:50%;background:rgba(250,249,246,.9);
+  transform:translate(-50%,-50%)}
 .walk-touch-help{display:none}
-@media(hover:none),(any-pointer:coarse){.walk-pad{display:flex}.walk-touch-help{display:inline}.walk-keyboard-help{display:none}}
-.walk-intro:not([hidden]) ~ .walk-pad{display:none}
+@media(hover:none),(any-pointer:coarse){.walk-touch-help{display:inline}.walk-keyboard-help{display:none}}
 @media(max-width:620px){
-  /* The readout is a grid here, not a wrap: five cells of unknown width would otherwise
-     decide the bar's height for us, and the thumb pad has to know where the bar ends. */
+  /* Keep the five readouts in two predictable rows on narrow screens. */
   .walk-hud{display:grid;grid-template-columns:1fr 1fr 1fr}
   .walk-hud .hc{padding:6px 9px;border-left:1px solid var(--rule);
     border-top:1px solid var(--rule);min-width:0}
@@ -371,8 +370,5 @@ footer a:focus-visible{outline:2px solid var(--moss);outline-offset:2px;border-r
   .walk-hud b{font-size:11.8px;gap:4px}
   .walk-hud .hu{font-size:9.6px}
   .walk-hud u{width:7px;height:7px}
-  /* Two rows of the grid above, plus room to breathe. */
-  .walk-pad{bottom:80px;right:10px;gap:6px}
-  .walk-pad button{width:48px;height:48px;font-size:12px}
-  #walkHost{height:430px}
+  #walkHost{position:relative;height:430px}
 }

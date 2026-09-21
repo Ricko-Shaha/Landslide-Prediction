@@ -50,7 +50,6 @@ window.RangamatiWalk = (function () {
     var banner = el(opts.banner);
     var intro = el(opts.intro);
     var startBtn = el(opts.start);
-    var pad = el(opts.pad);
     var dataUrl = opts.data || "walk_data.js";
     var onArrive = opts.onArrive || null;
 
@@ -146,7 +145,9 @@ window.RangamatiWalk = (function () {
     var raf = null, reduced = false, started = false, active = false;
     var state = "walk", fuse = 0, fallT = 0, shake = 0, grace = false, placed = false;
     var walked = 0, falls = 0, safeSpot = null, gradeDir;
-    var keys = {}, touchKeys = {}, heldPointers = new Map(), phase = 0, facing = 0, clock = 0;
+    var keys = {}, phase = 0, facing = 0, clock = 0;
+    var gestureId = null, gestureX = 0, gestureY = 0, gestureOriginX = 0, gestureOriginY = 0;
+    var gestureRing, gestureThumb;
     var camPos, camAim, camTarget, camLook;
 
     function build() {
@@ -442,7 +443,7 @@ window.RangamatiWalk = (function () {
         if (!active) return;
         var m = MOVE[e.key];
         if (m) { keys[m] = true; e.preventDefault(); }
-        else if (e.key === "Escape") { clearInput(); active = false; say("Paused. Touch the controls or click the map to continue."); }
+        else if (e.key === "Escape") { clearInput(); active = false; say("Paused. Touch or click the terrain to continue."); }
       });
       window.addEventListener("keyup", function (e) {
         var m = MOVE[e.key];
@@ -459,61 +460,66 @@ window.RangamatiWalk = (function () {
         }).observe(host);
       }
 
-      renderer.domElement.addEventListener("pointerdown", function () {
-        if (started) active = true;
-      });
+      gestureRing = document.createElement("div");
+      gestureRing.className = "walk-gesture";
+      gestureRing.hidden = true;
+      gestureRing.setAttribute("aria-hidden", "true");
+      gestureThumb = document.createElement("span");
+      gestureRing.appendChild(gestureThumb);
+      host.appendChild(gestureRing);
+      var surface = renderer.domElement;
+      surface.addEventListener("pointerdown", gestureOn);
+      surface.addEventListener("pointermove", gestureMove);
+      surface.addEventListener("pointerup", gestureOff);
+      surface.addEventListener("pointercancel", gestureOff);
+      surface.addEventListener("lostpointercapture", gestureOff);
+      surface.addEventListener("contextmenu", function (e) { e.preventDefault(); });
 
       if (startBtn) startBtn.addEventListener("click", start);
       if (intro) intro.addEventListener("click", function (e) {
         if (e.target === intro) start();
       });
 
-      if (pad) {
-        pad.addEventListener("pointerdown", padOn);
-        pad.addEventListener("pointermove", padMove);
-        pad.addEventListener("pointerup", padOff);
-        pad.addEventListener("pointercancel", padOff);
-        pad.addEventListener("lostpointercapture", padOff);
-        pad.addEventListener("contextmenu", function (e) { e.preventDefault(); });
-      }
     }
 
-    function padOn(e) {
-      var b = e.target.closest("button[data-k]");
-      if (!b || e.button !== 0) return;
+    function gestureOn(e) {
+      if (e.button !== 0 || gestureId !== null) return;
       e.preventDefault();
       if (!started) start();
       active = true;
-      heldPointers.set(e.pointerId, b.dataset.k);
-      pad.setPointerCapture(e.pointerId);
-      updatePad();
+      gestureId = e.pointerId;
+      gestureOriginX = e.clientX; gestureOriginY = e.clientY;
+      gestureX = 0; gestureY = 0;
+      var rect = host.getBoundingClientRect();
+      gestureRing.style.left = (e.clientX - rect.left) + "px";
+      gestureRing.style.top = (e.clientY - rect.top) + "px";
+      gestureThumb.style.transform = "translate(-50%, -50%)";
+      gestureRing.hidden = false;
+      renderer.domElement.setPointerCapture(e.pointerId);
     }
-    function padMove(e) {
-      if (!heldPointers.has(e.pointerId)) return;
+    function gestureMove(e) {
+      if (e.pointerId !== gestureId) return;
       e.preventDefault();
-      // Capture keeps release reliable; hit testing lets a thumb slide between arrows.
-      var hit = document.elementFromPoint(e.clientX, e.clientY);
-      var b = hit && hit.closest("button[data-k]");
-      heldPointers.set(e.pointerId, b && pad.contains(b) ? b.dataset.k : null);
-      updatePad();
+      var dx = e.clientX - gestureOriginX, dy = e.clientY - gestureOriginY;
+      var distance = Math.hypot(dx, dy), radius = 38, deadZone = 6;
+      var strength = Math.min(1, Math.max(0, (distance - deadZone) / (radius - deadZone)));
+      gestureX = distance ? dx / distance * strength : 0;
+      gestureY = distance ? dy / distance * strength : 0;
+      var limit = distance ? Math.min(radius, distance) / distance : 0;
+      gestureThumb.style.transform = "translate(-50%, -50%) translate(" + (dx * limit) + "px, " + (dy * limit) + "px)";
     }
-    function padOff(e) {
-      heldPointers.delete(e.pointerId);
-      updatePad();
+    function gestureOff(e) {
+      if (e.pointerId === gestureId) clearGesture();
     }
-    function updatePad() {
-      touchKeys = {};
-      heldPointers.forEach(function (direction) {
-        if (direction) touchKeys[direction] = true;
-      });
-      if (pad) pad.querySelectorAll("button[data-k]").forEach(function (b) {
-        b.classList.toggle("is-held", !!touchKeys[b.dataset.k]);
-      });
+    function clearGesture() {
+      var id = gestureId;
+      gestureId = null; gestureX = 0; gestureY = 0;
+      if (gestureRing) gestureRing.hidden = true;
+      if (id !== null && renderer.domElement.hasPointerCapture(id)) renderer.domElement.releasePointerCapture(id);
     }
     function clearInput() {
       keys = {};
-      heldPointers.clear();
-      updatePad();
+      clearGesture();
     }
 
     function start() {
@@ -521,7 +527,9 @@ window.RangamatiWalk = (function () {
       active = true;
       if (intro) intro.hidden = true;
       if (!raf) raf = requestAnimationFrame(frame);
-      say("Walk until the ground disagrees with you.");
+      say(window.matchMedia("(any-pointer: coarse)").matches ?
+        "Touch the terrain and slide to walk. Hold to keep moving; lift to stop." :
+        "Use WASD, arrow keys, or drag the terrain to walk.");
     }
 
     var sayT = 0;
@@ -600,16 +608,25 @@ window.RangamatiWalk = (function () {
 
     function step(dt) {
       var vx = 0, vz = 0;
-      if (keys.f || touchKeys.f) vz -= 1;
-      if (keys.b || touchKeys.b) vz += 1;
-      if (keys.l || touchKeys.l) vx -= 1;
-      if (keys.r || touchKeys.r) vx += 1;
+      if (keys.f) vz -= 1;
+      if (keys.b) vz += 1;
+      if (keys.l) vx -= 1;
+      if (keys.r) vx += 1;
+      if (gestureX || gestureY) {
+        /* A screen-right drag moves right on the visible terrain, even while the camera settles. */
+        var backX = camera.position.x - camAim.x, backZ = camera.position.z - camAim.z;
+        var backLength = Math.hypot(backX, backZ) || 1;
+        backX /= backLength; backZ /= backLength;
+        vx += backZ * gestureX + backX * gestureY;
+        vz += -backX * gestureX + backZ * gestureY;
+      }
 
       var moving = vx || vz;
       if (moving) grace = false;
       if (moving) {
         var len = Math.hypot(vx, vz);
-        vx = (vx / len) * SPEED * dt; vz = (vz / len) * SPEED * dt;
+        var speed = SPEED * Math.min(1, len);
+        vx = (vx / len) * speed * dt; vz = (vz / len) * speed * dt;
         var nx = surveyor.position.x + vx, nz = surveyor.position.z + vz;
         if (insideDistrict(nx, nz)) {
           surveyor.position.x = nx; surveyor.position.z = nz;
@@ -788,7 +805,8 @@ window.RangamatiWalk = (function () {
       var p = probOf(x, z);
       paint(x, z, p);
       if (note) {
-        say(note + (placed ? "" : "  Arrow keys or WASD to walk from here."),
+        say(note + (placed ? "" : (window.matchMedia("(any-pointer: coarse)").matches ?
+            "  Touch the terrain and slide to walk from here." : "  Arrow keys, WASD, or drag to walk from here.")),
             kind || (p >= 0.80 ? "bad" : ""));
       }
       placed = true;
@@ -871,7 +889,7 @@ window.RangamatiWalk = (function () {
     for (var i = 0; i < hosts.length; i++) {
       var h = hosts[i], d = h.dataset;
       API.current = init({ host: h, data: d.walk, hud: d.walkHud, banner: d.walkBanner,
-                           intro: d.walkIntro, start: d.walkStart, pad: d.walkPad });
+                           intro: d.walkIntro, start: d.walkStart });
     }
   }
   if (document.readyState === "loading") {

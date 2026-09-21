@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=20260922-3">
 <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}?v=4" type="image/svg+xml">
 <script src="{{ url_for('static', filename='theme.js') }}"></script>
 <script src="{{ url_for('static', filename='config.js') }}" defer></script>
@@ -151,16 +151,8 @@
                   <b>0.60&nbsp;to&nbsp;0.80</b> shakes underfoot. Ground it scores
                   <b>0.80&nbsp;and&nbsp;over</b> gives way, and takes you with it.</p>
                 <p class="walk-k"><span class="walk-keyboard-help"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow
-                  keys &middot; <kbd>Esc</kbd> to pause</span><span class="walk-touch-help">Hold an arrow to walk. Slide to turn; lift to stop.</span></p>
+                  keys &middot; <kbd>Esc</kbd> to pause</span><span class="walk-touch-help">Touch the terrain and slide to walk. Hold to keep moving; lift to stop.</span></p>
                 <button type="button" class="btn" id="walkStart">Send the surveyor out</button>
-              </div>
-            </div>
-            <div class="walk-pad" id="walkPad" role="group" aria-label="Hold an arrow to walk">
-              <button type="button" data-k="f" aria-label="forward">&#9650;</button>
-              <div>
-                <button type="button" data-k="l" aria-label="left">&#9664;</button>
-                <button type="button" data-k="b" aria-label="back">&#9660;</button>
-                <button type="button" data-k="r" aria-label="right">&#9654;</button>
               </div>
             </div>
           </div>
@@ -706,10 +698,10 @@ async function ensureWalk(){
     if(!window.THREE)
       await loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js");
     if(!window.RangamatiWalk)
-      await loadScript("{{ url_for('static', filename='walk.js') }}");
+      await loadScript("{{ url_for('static', filename='walk.js') }}?v=20260922-3");
     WALK=RangamatiWalk.init({
       host:"walkHost", hud:"walkHud", banner:"walkBanner", intro:"walkIntro",
-      start:"walkStart", pad:"walkPad",
+      start:"walkStart",
       data:"{{ url_for('static', filename='walk_data.js') }}",
       onArrive:reportWalk});
     if(WALK&&WALK_Q){ WALK_Q(WALK); WALK_Q=null; }
