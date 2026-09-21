@@ -2,6 +2,12 @@
 
 This is a separate Python web service. The portfolio runs on Cloudflare.
 
+Live app: **https://landslide-rangamati.onrender.com/**
+
+The `landslide-rangamati` Blueprint deploys `main` from
+`Ricko-Shaha/Landslide-Prediction` to Singapore on the **Free** plan.
+Pushing to that branch automatically deploys updates.
+
 ## Deploy
 
 1. Create a free Render account and connect your GitHub account.
