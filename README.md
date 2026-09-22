@@ -28,7 +28,7 @@ Five ways to ask the model a question:
 
 ## Interface and separate hosting
 
-For the prepared free Render deployment, see [HOSTING.md](HOSTING.md). `render.yaml` selects
+For the live Render setup, deployment commands, and troubleshooting, see [DEPLOY.md](DEPLOY.md). `render.yaml` selects
 the Free plan, `requirements-production.txt` pins the model runtime, and `web/serve.py` runs a
 production server. The shipped model and map are used directly, with no training during deploy.
 

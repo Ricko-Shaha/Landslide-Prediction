@@ -1,5 +1,7 @@
 # Host the Rangamati app on Render
 
+The complete guide for the current live service is [DEPLOY.md](DEPLOY.md), including updates, verification, free-plan limits, and the build-cache recovery procedure.
+
 This is a separate Python web service. The portfolio runs on Cloudflare.
 
 Live app: **https://landslide-rangamati.onrender.com/**
